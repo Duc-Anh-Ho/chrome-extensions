@@ -1,0 +1,16 @@
+{
+    "manifest_version": 3,
+    "name": "Videos Controller",
+    "version": "1.0.0",
+    "description" : "DANH tools collection!",
+    "icons": {
+        "128": "./images/Logo_VBAKC_128.png",
+        "48": "./images/Logo_VBAKC_48.png",
+        "16": "./images/Logo_VBAKC_18.png"
+    },
+    "browser_action": {
+        "defualt_icon": "./images/Logo_VBAKC_128.png",
+        "defualt_popup": "popup.html"
+    }
+
+}
