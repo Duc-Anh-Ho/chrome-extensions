@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Videos Controller",
+    "name": "DANH TOOLS: Videos Controller",
     "version": "1.0.0",
     "description" : "DANH tools collection!",
     "icons": {
@@ -8,9 +8,14 @@
         "48": "./images/Logo_VBAKC_48.png",
         "16": "./images/Logo_VBAKC_18.png"
     },
-    "browser_action": {
-        "defualt_icon": "./images/Logo_VBAKC_128.png",
-        "defualt_popup": "popup.html"
+    "permissions": [
+        "activeTab"
+    ],
+    "action": {
+        "default_icon": {
+            "128": "./images/Logo_VBAKC_128.png",
+            "48": "./images/Logo_VBAKC_48.png"
+        },
+        "default_popup": "./src/popup/popup.html"
     }
-
 }
