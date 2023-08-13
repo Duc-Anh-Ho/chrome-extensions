@@ -2,20 +2,31 @@
     "manifest_version": 3,
     "name": "DANH TOOLS: Videos Controller",
     "version": "1.0.0",
-    "description" : "DANH tools collection!",
+    "description": "DANH tools collection!",
     "icons": {
-        "128": "./images/Logo_VBAKC_128.png",
-        "48": "./images/Logo_VBAKC_48.png",
-        "16": "./images/Logo_VBAKC_18.png"
+        "128": "./assets/imgs/Logo_VBAKC_128.png",
+        "48": "./assets/imgs/Logo_VBAKC_48.png",
+        "16": "./assets/imgs/Logo_VBAKC_18.png"
     },
     "permissions": [
-        "activeTab"
+        "activeTab",
+        "tabs",
+        "storage",
+        "cookies"
     ],
     "action": {
         "default_icon": {
-            "128": "./images/Logo_VBAKC_128.png",
-            "48": "./images/Logo_VBAKC_48.png"
+            "128": "./assets/imgs/Logo_VBAKC_128.png",
+            "48": "./assets/imgs/Logo_VBAKC_48.png"
         },
         "default_popup": "./src/popup/popup.html"
+    },
+    "background": {
+        "service_worker": "./src/background/background.js"
+    },
+    "options_page": "./src/options/options.html",
+    "options_ui": {
+        "page": "./src/options/options.html",
+        "open_in_tab": true
     }
 }
