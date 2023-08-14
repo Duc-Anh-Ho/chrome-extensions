@@ -3,16 +3,20 @@ $(document).ready(() => {
     const videos = $("video"); // $$("video")
     const speedInp = $("#speed");
     const resetBtn = $("#reset-btn");
+    const closeBtn = $("#close-btn");
     let video = { ...VIDEO };
+    
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        console.log("message.resetInput:", message.resetInput);
-        if (message.resetInput) {
-            speedInp.val((VIDEO.speed / 100).toFixed(2));
+        if (message.action === "changeSpeed") {
+            chrome.storage.sync.get(["video"], result => {
+                video = result.video || { ...VIDEO };
+                speedInp.val((video.speed / 100).toFixed(2));
+            });
         }
     });
 
     chrome.storage.sync.get(["video"], result => {
-        video = parseInt(result.video) || { ... VIDEO};
+        video = result.video || { ...VIDEO };
         speedInp.val((video.speed / 100).toFixed(2));
     });
 
@@ -28,16 +32,26 @@ $(document).ready(() => {
         if (isValidSpeed) {
             video.speed = intSpeed;
         }
-        speedInp.val((video.speed / 100).toFixed(2))
         chrome.storage.sync.set({ video: video });
-    });
-
-    resetBtn.on("click", () => {;
-        chrome.runtime.sendMessage({ resetInput: true });
-        chrome.storage.sync.set({ video: VIDEO }, () => {
-            location.reload();
+        chrome.runtime.sendMessage({ action: "changeSpeed" })
+        chrome.storage.sync.get(["video"], result => {
+            video = result.video || { ...VIDEO };
+            speedInp.val((video.speed / 100).toFixed(2));
         });
     });
+
+    resetBtn.on("click", () => {
+        chrome.storage.sync.set({ video: VIDEO });
+        chrome.runtime.sendMessage({ action: "changeSpeed" });
+        chrome.storage.sync.get(["video"], result => {
+            video = result.video || { ...VIDEO };
+            speedInp.val((video.speed / 100).toFixed(2));
+        });
+    });
+
+    closeBtn.on("click", () => {
+        window.close();
+    })
 
     $(document).on("keydown", e => {
         if (e.shiftKey && e.code === "Slash") {
