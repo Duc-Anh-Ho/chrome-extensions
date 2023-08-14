@@ -9,7 +9,10 @@
         "16": "./assets/imgs/Logo_VBAKC_18.png"
     },
     "permissions": [
-        "activeTab"
+        "activeTab",
+        "tabs",
+        "storage",
+        "cookies"
     ],
     "action": {
         "default_icon": {
@@ -17,5 +20,13 @@
             "48": "./assets/imgs/Logo_VBAKC_48.png"
         },
         "default_popup": "./src/popup/popup.html"
+    },
+    "background": {
+        "service_worker": "./src/background/background.js"
+    },
+    "options_page": "./src/options/options.html",
+    "options_ui": {
+        "page": "./src/options/options.html",
+        "open_in_tab": true
     }
 }
