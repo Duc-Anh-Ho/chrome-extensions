@@ -5,24 +5,26 @@ $(document).ready(() => {
     const resetBtn = $("#reset-btn");
     const closeBtn = $("#close-btn");
     let video = { ...VIDEO };
-    
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        if (message.action === "changeSpeed") {
-            chrome.storage.sync.get(["video"], result => {
-                video = result.video || { ...VIDEO };
-                speedInp.val((video.speed / 100).toFixed(2));
-            });
-        }
-    });
 
-    chrome.storage.sync.get(["video"], result => {
-        video = result.video || { ...VIDEO };
-        speedInp.val((video.speed / 100).toFixed(2));
-    });
+    // TODO: move to common.js
+    function setSpeed() {
+        chrome.storage.sync.get(["video"], (result) => {
+            video = result.video || { ...VIDEO };
+            speedInp.val((video.speed / 100).toFixed(2));
+        });
+    }
+    function storeVideo(video) {
+        chrome.storage.sync.set({ video });
+    }
+    function requestAction(action) {
+        chrome.runtime.sendMessage({ action });
+    }
+    
+
+    setSpeed();
 
     speedInp.on("input", () => {
-        // Num inp only
-        let tmp = speedInp.val().replace(REGEX.CHR, "");
+        let tmp = speedInp.val().replace(REGEX.CHR, ""); // Num amd dot only
         speedInp.val(tmp);
     });
 
@@ -32,28 +34,28 @@ $(document).ready(() => {
         if (isValidSpeed) {
             video.speed = intSpeed;
         }
-        chrome.storage.sync.set({ video: video });
-        chrome.runtime.sendMessage({ action: "changeSpeed" })
-        chrome.storage.sync.get(["video"], result => {
-            video = result.video || { ...VIDEO };
-            speedInp.val((video.speed / 100).toFixed(2));
-        });
+        storeVideo(video);
+        setSpeed();
+        requestAction("updateSpeed");
     });
 
     resetBtn.on("click", () => {
-        chrome.storage.sync.set({ video: VIDEO });
-        chrome.runtime.sendMessage({ action: "changeSpeed" });
-        chrome.storage.sync.get(["video"], result => {
-            video = result.video || { ...VIDEO };
-            speedInp.val((video.speed / 100).toFixed(2));
-        });
+        storeVideo(VIDEO);
+        setSpeed();
+        requestAction("updateSpeed");
+    });
+
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        if (message.action === "updateSpeed") {
+            setSpeed();
+        }
     });
 
     closeBtn.on("click", () => {
         window.close();
-    })
+    });
 
-    $(document).on("keydown", e => {
+    $(document).on("keydown", (e) => {
         if (e.shiftKey && e.code === "Slash") {
             console.log("here");
         }
