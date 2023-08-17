@@ -9,10 +9,11 @@
         "16": "./assets/imgs/Logo_VBAKC_18.png"
     },
     "permissions": [
-        "activeTab",
-        "tabs",
-        "storage",
-        "cookies"
+        "activeTab"
+        , "tabs"
+        , "storage"
+        , "cookies"
+        , "notifications"
     ],
     "action": {
         "default_icon": {

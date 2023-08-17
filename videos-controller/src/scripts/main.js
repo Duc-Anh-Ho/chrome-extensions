@@ -19,8 +19,20 @@ $(document).ready(() => {
     function requestAction(action) {
         chrome.runtime.sendMessage({ action });
     }
+    function clearNotifications() {
+        chrome.notifications.getAll((notifications) => {
+            for (const notificationId in notifications) {
+                chrome.notifications.clear(notificationId, (isCleared) => {
+                    if (isCleared) {
+                        console.log(`Notification ${notificationId} cleared.`);
+                    } else {
+                        console.error(`Notification ${notificationId} could not be cleared.`);
+                    }
+                });
+            }
+        });
+    }
     
-
     setSpeed();
 
     speedInp.on("input", () => {
@@ -57,7 +69,31 @@ $(document).ready(() => {
 
     $(document).on("keydown", (e) => {
         if (e.shiftKey && e.code === "Slash") {
-            console.log("here");
+            // clearNotifications()
+            const notiId  = `notification-id-${Date.now()}`;    
+
+            const notiConfig = {
+                type: "basic",
+                iconUrl: "../../assets/imgs/Logo_VBAKC_48.png",
+                title: "Notification Basic",
+                message: "TEST",
+            };
+
+            const notiConfig_2 = {
+                type: "image",
+                iconUrl: "../../assets/imgs/Logo_VBAKC_48.png",
+                imageUrl: "../../assets/imgs/Logo_VBAKC_48.png",
+                title: "Notification Image",
+                message: "TEST",
+            };
+
+            // chrome.notifications.create(notiId, notiConfig, (id) => {
+            //     console.log("Created Nofication ID:", id);
+            // });
+            
+            chrome.notifications.create(notiId, notiConfig_2, (id) => {
+                console.log("Created Nofication ID:", id);
+            });
         }
     });
 });
