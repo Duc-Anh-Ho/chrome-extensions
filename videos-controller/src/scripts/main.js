@@ -1,25 +1,61 @@
-import { VIDEO, REGEX } from "../constants/constants.js";
+import { VIDEOS_CONFIG, REGEX } from "../constants/constants.js";
+import common from "./common.js";
+
 $(document).ready(() => {
+    // Videos Controller
     const videos = $("video"); // $$("video")
     const speedInp = $("#speed");
     const resetBtn = $("#reset-btn");
-    const closeBtn = $("#close-btn");
-    let video = { ...VIDEO };
-
-    // TODO: move to common.js
-    function setSpeed() {
-        chrome.storage.sync.get(["video"], (result) => {
-            video = result.video || { ...VIDEO };
-            speedInp.val((video.speed / 100).toFixed(2));
+    let videosConfig = { ...VIDEOS_CONFIG };
+    const storeVideo = (videosConfig) => {
+        chrome.storage.sync.set({ videosConfig});
+    };
+    const setSpeed = () => {
+        chrome.storage.sync.get(["videosConfig"], (result) => {
+            videosConfig = result.videosConfig || { ...VIDEOS_CONFIG };
+            speedInp.val((videosConfig.speed / 100).toFixed(2));
         });
+    };
+    const isValidSpeed = (speed) => {
+        const { MIN_SPEED, MAX_SPEED } = VIDEOS_CONFIG;
+        return !isNaN(speed) && speed >= MIN_SPEED && speed < MAX_SPEED;
     }
-    function storeVideo(video) {
-        chrome.storage.sync.set({ video });
-    }
-    function requestAction(action) {
-        chrome.runtime.sendMessage({ action });
-    }
-    function clearNotifications() {
+
+    setSpeed();
+    speedInp.on("input", common.regexInput(REGEX.CHR));
+    speedInp.on("change", (e) => {
+        const intSpeed = parseInt(speedInp.val() * 100);
+        if (isValidSpeed(intSpeed)) {
+            videosConfig.speed = intSpeed;
+        }
+        storeVideo(videosConfig);
+        common.requestAction("updateSpeed");
+        setSpeed();
+    });
+    resetBtn.on("click", () => {
+        storeVideo(VIDEOS_CONFIG);
+        common.requestAction("updateSpeed");
+        setSpeed();
+    });
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        if (message.action === "updateSpeed") {
+            setSpeed();
+        }
+    });
+
+    // Mode Controller
+    const modeCheckbox = $("#design-mode");
+    const storeMode = (modeConfig) => {
+        chrome.storage.sync.set({ modeConfig});
+    };
+    // Else
+    const closeBtn = $("#close-btn");
+    
+    closeBtn.on("click", () => {
+        window.close();
+    });
+
+    const clearNotifications = () => {
         chrome.notifications.getAll((notifications) => {
             for (const notificationId in notifications) {
                 chrome.notifications.clear(notificationId, (isCleared) => {
@@ -31,41 +67,7 @@ $(document).ready(() => {
                 });
             }
         });
-    }
-
-    setSpeed();
-
-    speedInp.on("input", () => {
-        let tmp = speedInp.val().replace(REGEX.CHR, ""); // Num amd dot only
-        speedInp.val(tmp);
-    });
-
-    speedInp.on("change", () => {
-        const intSpeed = parseInt(speedInp.val() * 100);
-        const isValidSpeed = !isNaN(intSpeed) && intSpeed >= 0 && intSpeed < 1000;
-        if (isValidSpeed) {
-            video.speed = intSpeed;
-        }
-        storeVideo(video);
-        setSpeed();
-        requestAction("updateSpeed");
-    });
-
-    resetBtn.on("click", () => {
-        storeVideo(VIDEO);
-        setSpeed();
-        requestAction("updateSpeed");
-    });
-
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        if (message.action === "updateSpeed") {
-            setSpeed();
-        }
-    });
-
-    closeBtn.on("click", () => {
-        window.close();
-    });
+    };
 
     $(document).on("keydown", (e) => {
         if (e.shiftKey && e.code === "Slash") {

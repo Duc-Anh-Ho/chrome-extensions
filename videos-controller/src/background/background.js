@@ -8,7 +8,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 const contextClick = (info, tab) => {
-    console.log("Context menu clicked!", info, tab);
+    console.log("Context menu clicked!");
+    console.log("info:", info);
+    console.log("tab:", tab);
 };
 
 const contextConfig = {
