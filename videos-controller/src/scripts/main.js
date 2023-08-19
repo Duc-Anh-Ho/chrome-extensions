@@ -32,7 +32,7 @@ $(document).ready(() => {
             }
         });
     }
-    
+
     setSpeed();
 
     speedInp.on("input", () => {
@@ -69,8 +69,10 @@ $(document).ready(() => {
 
     $(document).on("keydown", (e) => {
         if (e.shiftKey && e.code === "Slash") {
-            // clearNotifications()
-            const notiId  = `notification-id-${Date.now()}`;    
+            const notiId = `notification-id-${Date.now()}`;
+            const notiClick = (id) => {
+                console.log("Notification clicked:", id);
+            };
 
             const notiConfig = {
                 type: "basic",
@@ -90,10 +92,15 @@ $(document).ready(() => {
             // chrome.notifications.create(notiId, notiConfig, (id) => {
             //     console.log("Created Nofication ID:", id);
             // });
-            
+
             chrome.notifications.create(notiId, notiConfig_2, (id) => {
-                console.log("Created Nofication ID:", id);
+                console.log("Created Nofication:", id);
             });
+
+            chrome.notifications.onClicked.addListener(notiClick);
+        }
+        if (e.code === "Numpad0") {
+            clearNotifications();
         }
     });
 });

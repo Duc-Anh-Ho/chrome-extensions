@@ -4,5 +4,18 @@ console.log("Background script loaded!");
 // BUG: Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
 // REASON: chrome.runtime.sendMessage has to have at lease one listener
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log("Background script loaded!"); 
+    console.log("Background script loaded!");
 });
+
+const contextClick = (info, tab) => {
+    console.log("Context menu clicked!", info, tab);
+};
+
+const contextConfig = {
+    id: "context-menu-id",
+    title: "Context Menu",
+    contexts: ["page", "selection"],
+};
+
+chrome.contextMenus.create(contextConfig);
+chrome.contextMenus.onClicked.addListener(contextClick);
