@@ -29,16 +29,14 @@ $(document).ready(() => {
             videosConfig.speed = intSpeed;
         }
         storeVideo(videosConfig);
-        common.requestAction("updateSpeed");
         setSpeed();
     });
     resetBtn.on("click", () => {
         storeVideo(VIDEOS_CONFIG);
-        common.requestAction("updateSpeed");
         setSpeed();
     });
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        if (message.action === "updateSpeed") {
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+        if (namespace === "sync" && changes.videosConfig) {
             setSpeed();
         }
     });

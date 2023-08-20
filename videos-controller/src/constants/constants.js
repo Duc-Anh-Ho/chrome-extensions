@@ -14,12 +14,21 @@ const REGEX = {
     , CHR
 }
 
+const GREEN = "#00ff00";
+const RED = "#dc3545";
+const COLOR = {
+    GREEN
+    , RED
+}
+
 export {
     VIDEOS_CONFIG
     , REGEX
+    , COLOR
 }
 
 export default {
     VIDEOS_CONFIG
     , REGEX
+    , COLOR
 }

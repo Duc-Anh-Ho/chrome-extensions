@@ -1,10 +1,18 @@
+import common from "../scripts/common.js";
+import { VIDEOS_CONFIG, COLOR } from "../constants/constants.js";
 console.log("Background script loaded!");
 
-// NOTE: Don't remove this because it will occur below:
-// BUG: Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
-// REASON: chrome.runtime.sendMessage has to have at lease one listener
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log("Background script loaded!");
+chrome.storage.sync.get(["videosConfig"], (result) => {
+    let videosConfig = result.videosConfig || { ...VIDEOS_CONFIG };
+    let speedTxt = (videosConfig.speed / 100).toFixed(2).toString()
+    common.setBadgeText(speedTxt, COLOR.GREEN);
+});
+
+chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === "sync" && changes.videosConfig) {
+        const speedTxt = (changes.videosConfig.newValue.speed / 100).toFixed(2).toString()
+        common.setBadgeText(speedTxt, COLOR.GREEN);
+    }
 });
 
 const contextClick = (info, tab) => {
@@ -22,3 +30,4 @@ const contextConfig = {
 
 chrome.contextMenus.create(contextConfig);
 chrome.contextMenus.onClicked.addListener(contextClick);
+

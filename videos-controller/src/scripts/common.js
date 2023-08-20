@@ -6,14 +6,21 @@ const regexInput = (regex) => {
 
 const requestAction = (action) => {
     chrome.runtime.sendMessage({ action });
-}
+};
 
-export { 
+const setBadgeText = (text, color) => {
+    chrome.action.setBadgeBackgroundColor({ color })
+    chrome.action.setBadgeText({ text });
+};
+
+export {
     regexInput
     , requestAction
+    , setBadgeText
 };
 
 export default {
-    regexInput 
+    regexInput
     , requestAction
+    , setBadgeText
 };
