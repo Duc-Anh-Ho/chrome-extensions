@@ -1,3 +1,4 @@
+"use strict";
 const regexInput = (regex) => {
     return (event) => {
         event.target.value = event.target.value.replace(regex, "");
@@ -5,6 +6,7 @@ const regexInput = (regex) => {
 };
 
 const requestAction = (action) => {
+    console.log("action:", action);
     chrome.runtime.sendMessage({ action });
 };
 

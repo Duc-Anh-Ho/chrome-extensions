@@ -1,3 +1,4 @@
+"use strict";
 const speed = 100;
 const MIN_SPEED = 0;
 const MAX_SPEED = 1000;
@@ -21,14 +22,21 @@ const COLOR = {
     , RED
 }
 
+const CREATE_NOTIFICATION = "create-notification";
+const ACTION = {
+    CREATE_NOTIFICATION
+}
+
 export {
     VIDEOS_CONFIG
     , REGEX
     , COLOR
+    , ACTION
 }
 
 export default {
     VIDEOS_CONFIG
     , REGEX
     , COLOR
+    , ACTION
 }
