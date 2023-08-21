@@ -30,52 +30,58 @@ const contextConfig = {
     contexts: ["page", "selection"],
 };
 
-// const clearNotifications = () => {
-//     chrome.notifications.getAll((notifications) => {
-//         for (const notificationId in notifications) {
-//             chrome.notifications.clear(notificationId, (isCleared) => {
-//                 if (isCleared) {
-//                     console.log(`Notification ${notificationId} cleared.`);
-//                 } else {
-//                     console.error(`Notification ${notificationId} could not be cleared.`);
-//                 }
-//             });
-//         }
-//     });
-// };
+
+const clearNotifications = async () => {
+    await chrome.notifications.getAll(async (notifications) => {
+        for (const notificationId in notifications) {
+            await chrome.notifications.clear(notificationId, (isCleared) => {
+                if (isCleared) {
+                    console.log(`Notification ${notificationId} cleared.`);
+                } else {
+                    console.error(`Notification ${notificationId} could not be cleared.`);
+                }
+            });
+        }
+    });
+};
 
 chrome.contextMenus.create(contextConfig);
 chrome.contextMenus.onClicked.addListener(contextClick);
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log("message"); // TODO: <-- DELETE 
-    if (message.action === ACTION.CREATE_NOTIFICATION) {
-        const notiId = `notification-id-${Date.now()}`;
-        const notiClick = (id) => {
-            console.log("Notification clicked:", id);
-        };
+chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+    switch (message.action) {
+        case ACTION.CREATE_NOTIFICATION:
+            const notiId = `notification-id-${Date.now()}`;
+            const notiClick = (id) => {
+                console.log("Notification clicked:", id);
+            };
+            const notiConfig = {
+                type: "basic",
+                iconUrl: "../../assets/imgs/Logo_VBAKC_48.png",
+                title: "Notification Basic",
+                message: "TEST",
+            };
+            const notiConfig_2 = {
+                type: "image",
+                iconUrl: "../../assets/imgs/Logo_VBAKC_48.png",
+                imageUrl: "../../assets/imgs/Logo_VBAKC_48.png",
+                title: "Notification Image",
+                message: "TEST",
+            };
+            console.log("here"); // TODO: <-- DELETE 
+            // await chrome.notifications.create(notiId, notiConfig, (id) => {
+            //     console.log("Created Notification:", id);
+            // });
 
-        const notiConfig = {
-            type: "basic",
-            iconUrl: "../../assets/imgs/Logo_VBAKC_48.png",
-            title: "Notification Basic",
-            message: "TEST",
-        };
-
-        const notiConfig_2 = {
-            type: "image",
-            iconUrl: "../../assets/imgs/Logo_VBAKC_48.png",
-            imageUrl: "../../assets/imgs/Logo_VBAKC_48.png",
-            title: "Notification Image",
-            message: "TEST",
-        };
-        console.log("here"); // TODO: <-- DELETE 
-        // chrome.notifications.create(notiId, notiConfig, (id) => {
-        //     console.log("Created Notification ID:", id);
-        // });
-
-        chrome.notifications.create(notiId, notiConfig_2, (id) => {
-            console.log("Created Notification:", id);
-        });
-        chrome.notifications.onClicked.addListener(notiClick);
+            await chrome.notifications.create(notiId, notiConfig_2, (id) => {
+                console.log("Created Notification:", id);
+            });
+            await chrome.notifications.onClicked.addListener(notiClick);
+            break;
+        case ACTION.CLEAR_NOTIFICATIONS:
+            await clearNotifications();
+            break;
+        default:
+            console.log("message:", message); // TODO: <-- DELETE 
+            break;
     }
 })

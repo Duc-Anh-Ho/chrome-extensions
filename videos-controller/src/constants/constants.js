@@ -23,8 +23,10 @@ const COLOR = {
 }
 
 const CREATE_NOTIFICATION = "create-notification";
+const CLEAR_NOTIFICATIONS = "clear-notifications";
 const ACTION = {
     CREATE_NOTIFICATION
+    , CLEAR_NOTIFICATIONS
 }
 
 export {
@@ -33,7 +35,6 @@ export {
     , COLOR
     , ACTION
 }
-
 export default {
     VIDEOS_CONFIG
     , REGEX

@@ -10,11 +10,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const speedInp = document.getElementById("speed");
     const resetBtn = document.getElementById("reset-btn");
     let videosConfig = { ...VIDEOS_CONFIG };
-    const storeVideo = (videosConfig) => {
-        chrome.storage.sync.set({ videosConfig });
+    const storeVideo = async (videosConfig) => {
+        await chrome.storage.sync.set({ videosConfig });
     };
-    const setSpeed = () => {
-        chrome.storage.sync.get(["videosConfig"], (result) => {
+    const setSpeed = async () => {
+        await chrome.storage.sync.get(["videosConfig"], (result) => {
             videosConfig = result.videosConfig || { ...VIDEOS_CONFIG };
             speedInp.value = (videosConfig.speed / 100).toFixed(2);
         });
@@ -46,8 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Mode Controller
     const modeCheckbox = document.getElementById("design-mode");
-    const storeMode = (modeConfig) => {
-        chrome.storage.sync.set({ modeConfig });
+    const storeMode = async (modeConfig) => {
+        await chrome.storage.sync.set({ modeConfig });
     };
     // Else
     const closeBtn = document.getElementById("close-btn");

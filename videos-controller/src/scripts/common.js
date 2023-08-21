@@ -5,24 +5,32 @@ const regexInput = (regex) => {
     };
 };
 
-const requestAction = (action) => {
+const requestAction = async (action, extensionId = null) => {
     console.log("action:", action);
-    chrome.runtime.sendMessage({ action });
+    await chrome.runtime.sendMessage(extensionId ,{ action });
 };
 
-const setBadgeText = (text, color) => {
-    chrome.action.setBadgeBackgroundColor({ color })
-    chrome.action.setBadgeText({ text });
+const setBadgeText = async (text, color) => {
+    await chrome.action.setBadgeBackgroundColor({ color })
+    await chrome.action.setBadgeText({ text });
+};
+
+const getCurrentTab = async () => {
+    const queryOptions = { active: true, lastFocusedWindow: true };
+    const [tab] = await chrome.tabs.query(queryOptions);
+    return tab;
 };
 
 export {
     regexInput
     , requestAction
     , setBadgeText
+    , getCurrentTab
 };
 
 export default {
     regexInput
     , requestAction
     , setBadgeText
+    , getCurrentTab
 };
