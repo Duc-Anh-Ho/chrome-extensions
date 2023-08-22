@@ -36,7 +36,7 @@ const clearNotifications = async () => {
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     switch (message.action) {
         case ACTION.SHOW_PAGE_ACTION:
-            await common.showPageAction();
+            await common.dissableAction(sender.tab.id);
             break;
         case ACTION.CREATE_NOTIFICATION:
             const notiId = `notification-id-${Date.now()}`;

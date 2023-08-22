@@ -9,20 +9,21 @@ const getCurrentTab = async () => {
         active: true,
         currentWindow: true 
     };
-    return await chrome.tabs.query(queryOptions)
+    return await chrome.tabs.query(queryOptions);
 };
 const getLastTab = async () => {
     const queryOptions = { 
         active: true
         , lastFocusedWindow: true 
     };
-    return await chrome.tabs.query(queryOptions)
+    return await chrome.tabs.query(queryOptions);
 };
-const showPageAction = async () => {
-    const tab = await getCurrentTab();
-    console.log("tab :", tab );
-    const tab2 = await getLastTab();
-    console.log("tab2 :", tab );
+const enableAction = async (tabId) => {
+    await chrome.action.enable(tabId);
+};
+const dissableAction = async (tabId) => {
+    await chrome.action.disable(tabId);
+    await chrome.action.setBadgeText({ text: "" });
 };
 const requestAction = async (action) => {
     await chrome.runtime.sendMessage({ action });
@@ -30,6 +31,9 @@ const requestAction = async (action) => {
 const setBadgeText = async (text, color) => {
     await chrome.action.setBadgeBackgroundColor({ color })
     await chrome.action.setBadgeText({ text });
+};
+const removeBangeText = async () => {
+    await chrome.action.setBadgeText({ text: "" });
 };
 const createContextMenu = async (config, clickEvent) => {
     // Create only on installed
@@ -43,18 +47,22 @@ export {
     regexInput
     , requestAction
     , setBadgeText
+    , removeBangeText
     , getCurrentTab
     , getLastTab
     , createContextMenu
-    , showPageAction
+    , enableAction
+    , dissableAction
 };
 
 export default {
     regexInput
     , requestAction
     , setBadgeText
+    , removeBangeText
     , getCurrentTab
     , getLastTab
     , createContextMenu
-    , showPageAction
+    , enableAction
+    , dissableAction
 };
