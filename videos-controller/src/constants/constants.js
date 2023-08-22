@@ -24,9 +24,11 @@ const COLOR = {
 
 const CREATE_NOTIFICATION = "create-notification";
 const CLEAR_NOTIFICATIONS = "clear-notifications";
+const SHOW_PAGE_ACTION = "show-page-action";
 const ACTION = {
     CREATE_NOTIFICATION
     , CLEAR_NOTIFICATIONS
+    , SHOW_PAGE_ACTION
 }
 
 export {

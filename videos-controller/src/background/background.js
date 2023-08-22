@@ -4,6 +4,7 @@ import { VIDEOS_CONFIG, COLOR, ACTION } from "../constants/constants.js";
 
 console.log("Background script loaded!");
 
+// Video Controller
 chrome.storage.sync.get(["videosConfig"], (result) => {
     let videosConfig = result.videosConfig || { ...VIDEOS_CONFIG };
     let speedTxt = (videosConfig.speed / 100).toFixed(2).toString();
@@ -17,20 +18,7 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     }
 });
 
-const contextClick = (info, tab) => {
-    if (info.menuItemId === "context-menu-id") {
-        console.log("info.selectionText:", typeof info.selectionText);
-        console.log("Context menu clicked!");
-    }
-};
-
-const contextConfig = {
-    id: "context-menu-id",
-    title: "Context Menu",
-    contexts: ["page", "selection"],
-};
-
-
+// Notifications
 const clearNotifications = async () => {
     await chrome.notifications.getAll(async (notifications) => {
         for (const notificationId in notifications) {
@@ -45,10 +33,11 @@ const clearNotifications = async () => {
     });
 };
 
-chrome.contextMenus.create(contextConfig);
-chrome.contextMenus.onClicked.addListener(contextClick);
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     switch (message.action) {
+        case ACTION.SHOW_PAGE_ACTION:
+            await common.showPageAction();
+            break;
         case ACTION.CREATE_NOTIFICATION:
             const notiId = `notification-id-${Date.now()}`;
             const notiClick = (id) => {
@@ -67,13 +56,12 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
                 title: "Notification Image",
                 message: "TEST",
             };
-            console.log("here"); // TODO: <-- DELETE 
-            // await chrome.notifications.create(notiId, notiConfig, (id) => {
-            //     console.log("Created Notification:", id);
-            // });
+            await chrome.notifications.create(notiId, notiConfig, (id) => {
+                console.log("Created Basic Notification:", id);
+            });
 
             await chrome.notifications.create(notiId, notiConfig_2, (id) => {
-                console.log("Created Notification:", id);
+                console.log("Created Image Notification:", id);
             });
             await chrome.notifications.onClicked.addListener(notiClick);
             break;
@@ -81,7 +69,24 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
             await clearNotifications();
             break;
         default:
-            console.log("message:", message); // TODO: <-- DELETE 
+            console.log("message:", message); // TODO: <-- DELETE
             break;
     }
-})
+});
+
+// Context menu
+const contextConfig = {
+    title: "Selected: %s",
+    contexts: ["page", "selection"],
+    id: "context-menu-id",
+};
+const contextClick = (info, tab) => {
+    if (info.menuItemId === "context-menu-id") {
+        console.log("info.selectionText:", info.selectionText);
+        console.log("typeof info.selectionText:", typeof info.selectionText);
+        console.log("Context menu clicked!");
+    }
+};
+
+common.createContextMenu(contextConfig, contextClick);
+
