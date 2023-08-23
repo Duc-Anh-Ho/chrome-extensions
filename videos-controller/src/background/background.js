@@ -35,8 +35,23 @@ const clearNotifications = async () => {
 
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     switch (message.action) {
-        case ACTION.SHOW_PAGE_ACTION:
+        case ACTION.HIDE_PAGE_ACTION:
+            const enableIcons = { 
+                "16" : "../../assets/imgs/Logo_VBAKC_18_grey.png",
+                "48" : "../../assets/imgs/Logo_VBAKC_48_grey.png",
+                "128" : "../../assets/imgs/Logo_VBAKC_128_grey.png"
+            }
             await common.dissableAction(sender.tab.id);
+            await common.setIcon(enableIcons, sender.tab.id);
+            break;
+        case ACTION.SHOW_PAGE_ACTION:
+            const disableIcons = { 
+                "16" : "../../assets/imgs/Logo_VBAKC_18_grey.png",
+                "48" : "../../assets/imgs/Logo_VBAKC_48_grey.png",
+                "128" : "../../assets/imgs/Logo_VBAKC_128_grey.png"
+            }
+            await common.dissableAction(sender.tab.id);
+            await common.setIcon(disableIcons, sender.tab.id);
             break;
         case ACTION.CREATE_NOTIFICATION:
             const notiId = `notification-id-${Date.now()}`;
@@ -69,7 +84,6 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
             await clearNotifications();
             break;
         default:
-            console.log("message:", message); // TODO: <-- DELETE
             break;
     }
 });

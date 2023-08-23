@@ -4,6 +4,7 @@ const regexInput = (regex) => {
         event.target.value = event.target.value.replace(regex, "");
     };
 };
+
 const getCurrentTab = async () => {
     const queryOptions = { 
         active: true,
@@ -35,6 +36,12 @@ const setBadgeText = async (text, color) => {
 const removeBangeText = async () => {
     await chrome.action.setBadgeText({ text: "" });
 };
+const setIcon = async (iconPaths, tabId) => {
+    await chrome.action.setIcon({
+        path: iconPaths,
+        tabId: tabId
+    });
+}
 const createContextMenu = async (config, clickEvent) => {
     // Create only on installed
     await chrome.runtime.onInstalled.addListener( async () => {
@@ -47,6 +54,7 @@ export {
     regexInput
     , requestAction
     , setBadgeText
+    , setIcon
     , removeBangeText
     , getCurrentTab
     , getLastTab
@@ -59,6 +67,7 @@ export default {
     regexInput
     , requestAction
     , setBadgeText
+    , setIcon
     , removeBangeText
     , getCurrentTab
     , getLastTab
