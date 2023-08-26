@@ -1,10 +1,11 @@
 "use strict";
+// REGULAR
 const regexInput = (regex) => {
     return (event) => {
         event.target.value = event.target.value.replace(regex, "");
     };
 };
-
+// CHROME
 const getCurrentTab = async () => {
     const queryOptions = { 
         active: true,
@@ -43,10 +44,44 @@ const setIcon = async (iconPaths, tabId) => {
     });
 }
 const createContextMenu = async (config, clickEvent) => {
+    if (!clickEvent) {
+        clickEvent = (info, tab) => {
+            console.info("Context menu clicked:", info.menuItemId);
+            console.info("info.selectionText:", info.selectionText);
+        }
+    }
     // Create only on installed
     await chrome.runtime.onInstalled.addListener( async () => {
         await chrome.contextMenus.create(config);
+        console.info(`Created context menu:`, config.id);
+        console.log("clickEvent:", clickEvent);
         await chrome.contextMenus.onClicked.addListener(clickEvent);
+    });
+}
+const createNotification = async (config, clickEvent) => {
+    const id = `notification-id-${Date.now()}`;
+    if (!clickEvent) {
+        clickEvent = () => {
+            clickEvent = (id) => {
+                console.info("Notification clicked:", id);
+            };
+        }
+    }
+    await chrome.notifications.create(id, config)
+    console.info(`Created ${config.type} notification:`, id);
+    await chrome.notifications.onClicked.addListener(clickEvent);
+}
+const clearNotifications = async () => {
+    await chrome.notifications.getAll(async (notifications) => {
+        for (const notificationId in notifications) {
+            await chrome.notifications.clear(notificationId, (isCleared) => {
+                if (isCleared) {
+                    console.info(`Notification ${notificationId} cleared.`);
+                } else {
+                    console.error(`Notification ${notificationId} could not be cleared.`);
+                }
+            });
+        }
     });
 }
 
@@ -59,6 +94,8 @@ export {
     , getCurrentTab
     , getLastTab
     , createContextMenu
+    , createNotification
+    , clearNotifications
     , enableAction
     , dissableAction
 };
@@ -72,6 +109,8 @@ export default {
     , getCurrentTab
     , getLastTab
     , createContextMenu
+    , createNotification
+    , clearNotifications
     , enableAction
     , dissableAction
 };

@@ -14,6 +14,9 @@ const main = async () => {
         if (e.code === "Numpad0") {
             common.requestAction(ACTION.CLEAR_NOTIFICATIONS);
         }
+        if (e.code === "Digit1") {
+            common.requestAction(ACTION.CLEAR_NOTIFICATIONS);
+        }
     });
 }
 

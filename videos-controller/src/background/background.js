@@ -54,16 +54,12 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
             await common.setIcon(disableIcons, sender.tab.id);
             break;
         case ACTION.CREATE_NOTIFICATION:
-            const notiId = `notification-id-${Date.now()}`;
-            const notiClick = (id) => {
-                console.log("Notification clicked:", id);
-            };
-            const notiConfig = {
-                type: "basic",
-                iconUrl: "../../assets/imgs/Logo_VBAKC_48.png",
-                title: "Notification Basic",
-                message: "TEST",
-            };
+            // const notiConfig = {
+            //     type: "basic",
+            //     iconUrl: "../../assets/imgs/Logo_VBAKC_48.png",
+            //     title: "Notification Basic",
+            //     message: "TEST",
+            // };
             const notiConfig_2 = {
                 type: "image",
                 iconUrl: "../../assets/imgs/Logo_VBAKC_48.png",
@@ -71,17 +67,10 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
                 title: "Notification Image",
                 message: "TEST",
             };
-            await chrome.notifications.create(notiId, notiConfig, (id) => {
-                console.log("Created Basic Notification:", id);
-            });
-
-            await chrome.notifications.create(notiId, notiConfig_2, (id) => {
-                console.log("Created Image Notification:", id);
-            });
-            await chrome.notifications.onClicked.addListener(notiClick);
+            await common.createNotification(notiConfig_2)
             break;
         case ACTION.CLEAR_NOTIFICATIONS:
-            await clearNotifications();
+            await common.clearNotifications();
             break;
         default:
             break;
@@ -94,13 +83,5 @@ const contextConfig = {
     contexts: ["page", "selection"],
     id: "context-menu-id",
 };
-const contextClick = (info, tab) => {
-    if (info.menuItemId === "context-menu-id") {
-        console.log("info.selectionText:", info.selectionText);
-        console.log("typeof info.selectionText:", typeof info.selectionText);
-        console.log("Context menu clicked!");
-    }
-};
 
-common.createContextMenu(contextConfig, contextClick);
-
+common.createContextMenu(contextConfig);
