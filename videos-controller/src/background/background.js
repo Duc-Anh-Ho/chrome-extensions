@@ -18,33 +18,9 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     }
 });
 
-// Notifications
-const clearNotifications = async () => {
-    await chrome.notifications.getAll(async (notifications) => {
-        for (const notificationId in notifications) {
-            await chrome.notifications.clear(notificationId, (isCleared) => {
-                if (isCleared) {
-                    console.log(`Notification ${notificationId} cleared.`);
-                } else {
-                    console.error(`Notification ${notificationId} could not be cleared.`);
-                }
-            });
-        }
-    });
-};
-
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     switch (message.action) {
         case ACTION.HIDE_PAGE_ACTION:
-            const enableIcons = { 
-                "16" : "../../assets/imgs/Logo_VBAKC_18_grey.png",
-                "48" : "../../assets/imgs/Logo_VBAKC_48_grey.png",
-                "128" : "../../assets/imgs/Logo_VBAKC_128_grey.png"
-            }
-            await common.dissableAction(sender.tab.id);
-            await common.setIcon(enableIcons, sender.tab.id);
-            break;
-        case ACTION.SHOW_PAGE_ACTION:
             const disableIcons = { 
                 "16" : "../../assets/imgs/Logo_VBAKC_18_grey.png",
                 "48" : "../../assets/imgs/Logo_VBAKC_48_grey.png",
@@ -52,6 +28,15 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
             }
             await common.dissableAction(sender.tab.id);
             await common.setIcon(disableIcons, sender.tab.id);
+            break;
+        case ACTION.SHOW_PAGE_ACTION:
+            const enableIcons = { 
+                "16" : "../../assets/imgs/Logo_VBAKC_18.png",
+                "48" : "../../assets/imgs/Logo_VBAKC_48.png",
+                "128" : "../../assets/imgs/Logo_VBAKC_128.png"
+            }
+            await common.enableAction(sender.tab.id);
+            await common.setIcon(enableIcons, sender.tab.id);
             break;
         case ACTION.CREATE_NOTIFICATION:
             // const notiConfig = {

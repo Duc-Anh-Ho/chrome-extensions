@@ -5,7 +5,74 @@ const regexInput = (regex) => {
         event.target.value = event.target.value.replace(regex, "");
     };
 };
-// CHROME
+const isFullScreen = (doc) => !!(
+    doc.fullscreenElement ||
+    doc.webkitFullscreenElement ||
+    doc.mozFullScreenElement ||
+    doc.msFullscreenElement
+);
+const requestFullScreen = (elem) => {
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+    } else if (elem.webkitRequestFullScreen) {
+        elem.webkitRequestFullScreen();
+    } else if (elem.mozRequestFullScreen) {
+        elem.mozRequestFullScreen();
+    } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+    }
+};
+const exitFullscreen = (doc) => {
+    if (doc.exitFullscreen) {
+        doc.exitFullscreen();
+    } else if (doc.webkitFullscreenElement) {
+        doc.webkitExitFullscreen();
+    } else if (doc.mozFullScreenElement) {
+        doc.mozCancelFullScreen();
+    } else if (doc.msFullscreenElement) {
+        doc.msExitFullscreen();
+    }
+};
+const toggleFullscreen = (doc, elem) => {
+    console.log("isFullScreen(doc):", isFullScreen(doc));
+    if (isFullScreen(doc)) {
+        exitFullscreen(doc);
+    } else {
+        requestFullScreen(elem);
+    }
+};
+const isPlaying = (video) => !!(
+    video.currentTime > 0 
+    && !video.paused 
+    && !video.ended 
+    && video.readyState > 2
+);
+const getVideos = (doc) => {
+    // return [ ...doc.querySelectorAll("video")]; // $$("video")
+    return doc.querySelectorAll("video"); // $$("video")
+};
+const getActiveVideo = (doc) => {
+    return doc.querySelector("video");
+};
+const setLastPlayedVideo = (doc) => {
+    const videos = getVideos(doc);
+    for (const video of videos) {
+        video.addEventListener("play", () => {
+            video.setAttribute("data-last-played", "true");
+            for (const otherVideo of getVideos(doc)) {
+                if (otherVideo !== video) {
+                    otherVideo.removeAttribute("data-last-played");
+                }
+            }
+        });
+    }
+};
+const getLastPlayedVideo = (doc) => {
+    return doc.querySelector("video[data-last-played]") || null;
+}
+
+
+// CHROME API
 const getCurrentTab = async () => {
     const queryOptions = { 
         active: true,
@@ -86,7 +153,17 @@ const clearNotifications = async () => {
 
 export {
     regexInput
+    , isFullScreen
+    , requestFullScreen
+    , exitFullscreen
+    , toggleFullscreen
+    , isPlaying
     , requestAction
+    , getVideos
+    , getActiveVideo
+    , setLastPlayedVideo
+    , getLastPlayedVideo
+
     , setBadgeText
     , setIcon
     , removeBangeText
@@ -101,7 +178,17 @@ export {
 
 export default {
     regexInput
+    , isFullScreen
+    , requestFullScreen
+    , exitFullscreen
+    , toggleFullscreen
+    , isPlaying
     , requestAction
+    , getVideos
+    , getActiveVideo
+    , setLastPlayedVideo
+    , getLastPlayedVideo
+
     , setBadgeText
     , setIcon
     , removeBangeText
