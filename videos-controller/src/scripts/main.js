@@ -6,7 +6,6 @@ console.log("Main script loaded!");
 
 document.addEventListener("DOMContentLoaded", () => {
     // Videos Controller
-    const videos = document.querySelectorAll("video"); // $$("video")
     const speedInp = document.getElementById("speed");
     const resetBtn = document.getElementById("reset-btn");
     let videosConfig = { ...VIDEOS_CONFIG };

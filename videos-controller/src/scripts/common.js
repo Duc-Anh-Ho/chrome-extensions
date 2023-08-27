@@ -54,7 +54,6 @@ const createContextMenu = async (config, clickEvent) => {
     await chrome.runtime.onInstalled.addListener( async () => {
         await chrome.contextMenus.create(config);
         console.info(`Created context menu:`, config.id);
-        console.log("clickEvent:", clickEvent);
         await chrome.contextMenus.onClicked.addListener(clickEvent);
     });
 }
