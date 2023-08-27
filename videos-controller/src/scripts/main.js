@@ -2,7 +2,7 @@
 import { VIDEOS_CONFIG, REGEX } from "../constants/constants.js";
 import common from "./common.js";
 
-console.log("Main script loaded!");
+console.info("Main script loaded!");
 
 document.addEventListener("DOMContentLoaded", () => {
     // Videos Controller

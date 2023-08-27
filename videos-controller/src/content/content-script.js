@@ -1,23 +1,22 @@
 "use strict";
-import common from "../scripts/common.js";
+import common, { isPlaying } from "../scripts/common.js";
 import { ACTION } from "../constants/constants.js";
 
-console.log("Content script loaded!");
+console.info("Content script loaded!");
 
 const main = async () => {
     // VIDEO controllers
-    let videos = common.getVideos(document); 
-    common.setLastPlayedVideo(document);
     document.addEventListener("click", async (e) => {
         common.setLastPlayedVideo(document); // Refresh/Update 
     });
     document.addEventListener("keydown", async (e) => {
         console.log("e.code:", e.code);
         // Refresh/Update variables
-        videos = common.getVideos(document); 
         common.setLastPlayedVideo(document);
+        let videos = common.getVideos(document); 
         if (!videos?.length) return;
-        videos_loop: for (const [index, video] of videos.entries()) {
+        videos_loop: for (const video of videos) {
+            let activeVideo = common.isPlaying(video) ? video : common.getLastPlayedVideo(document);
             switch (e.code) {
                 case "Period":
                     if (!e.shiftKey) break;
@@ -29,21 +28,17 @@ const main = async () => {
                     break;
                 // case "Space":
                 case "KeyK":
-                    video.paused ? video.play() : video.pause();
+                    activeVideo === video ? video.paused ? video.play() : video.pause() : video.pause();
                     break;
                 case "KeyM":
-                    video.muted = !video.muted;
+                    video.muted = activeVideo === video ? !video.muted : true;
                     break;
                 case "Enter":
                     if (!e.altKey) break;
                 case "KeyF":
-                    console.log("common.isPlaying(video):", common.isPlaying(video));
-                    if (common.isPlaying(video)) {
-                        common.toggleFullscreen(document, video);
-                        break videos_loop;
-                    } else if (videos.length - 1  === index) {
-                        let activeVideo = common.getLastPlayedVideo(document) || common.getActiveVideo(document) ;
-                        if (activeVideo) common.toggleFullscreen(document, activeVideo);
+                    if (activeVideo === video) {
+                        await common.toggleFullscreen(document, video);
+                        break videos_loop; // For 2 videos playing
                     }
                     break;
                 default:

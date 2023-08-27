@@ -11,48 +11,44 @@ const isFullScreen = (doc) => !!(
     doc.mozFullScreenElement ||
     doc.msFullscreenElement
 );
-const requestFullScreen = (elem) => {
-    if (elem.requestFullscreen) {
-        elem.requestFullscreen();
-    } else if (elem.webkitRequestFullScreen) {
-        elem.webkitRequestFullScreen();
-    } else if (elem.mozRequestFullScreen) {
-        elem.mozRequestFullScreen();
-    } else if (elem.msRequestFullscreen) {
-        elem.msRequestFullscreen();
-    }
-};
-const exitFullscreen = (doc) => {
-    if (doc.exitFullscreen) {
-        doc.exitFullscreen();
-    } else if (doc.webkitFullscreenElement) {
-        doc.webkitExitFullscreen();
-    } else if (doc.mozFullScreenElement) {
-        doc.mozCancelFullScreen();
-    } else if (doc.msFullscreenElement) {
-        doc.msExitFullscreen();
-    }
-};
-const toggleFullscreen = (doc, elem) => {
-    console.log("isFullScreen(doc):", isFullScreen(doc));
-    if (isFullScreen(doc)) {
-        exitFullscreen(doc);
-    } else {
-        requestFullScreen(elem);
-    }
-};
 const isPlaying = (video) => !!(
     video.currentTime > 0 
     && !video.paused 
     && !video.ended 
     && video.readyState > 2
 );
+const enableFullScreen = async (doc, elem) => {
+    if (elem.webkitRequestFullScreen || doc.webkitFullscreenEnabled) {
+        await elem.webkitRequestFullScreen();
+    } else if (elem.mozRequestFullScreen || doc.mozFullScreenEnabled) {
+        await elem.mozRequestFullScreen();
+    } else if (elem.msRequestFullscreen || doc.msFullscreenEnabled) {
+        await elem.msRequestFullscreen();
+    } else if (elem.requestFullscree || doc.fullscreenEnabled) {
+        await elem.requestFullscreen();
+    }
+};
+const disableFullscreen = async (doc) => {
+    if (doc.exitFullscreen ) {
+        await doc.exitFullscreen();
+    } else if (doc.webkitFullscreenElement) {
+        await doc.webkitExitFullscreen();
+    } else if (doc.mozFullScreenElement) {
+        await doc.mozCancelFullScreen();
+    } else if (doc.msFullscreenElement) {
+        await doc.msExitFullscreen();
+    }
+};
+const toggleFullscreen = async (doc, elem) => {
+    if (isFullScreen(doc)) {
+        await disableFullscreen(doc);
+    } else {
+        await enableFullScreen(doc, elem);
+    }
+};
 const getVideos = (doc) => {
     // return [ ...doc.querySelectorAll("video")]; // $$("video")
     return doc.querySelectorAll("video"); // $$("video")
-};
-const getActiveVideo = (doc) => {
-    return doc.querySelector("video");
 };
 const setLastPlayedVideo = (doc) => {
     const videos = getVideos(doc);
@@ -68,9 +64,12 @@ const setLastPlayedVideo = (doc) => {
     }
 };
 const getLastPlayedVideo = (doc) => {
-    return doc.querySelector("video[data-last-played]") || null;
-}
-
+    return (
+        doc.querySelector("video[data-last-played]") 
+        || doc.querySelector("video")
+        || ((doc.activeElement instanceof HTMLVideoElement) ? doc.activeElement : null)
+    )
+};
 
 // CHROME API
 const getCurrentTab = async () => {
@@ -154,14 +153,13 @@ const clearNotifications = async () => {
 export {
     regexInput
     , isFullScreen
-    , requestFullScreen
-    , exitFullscreen
+    , enableFullScreen
+    , disableFullscreen
     , toggleFullscreen
     , isPlaying
     , requestAction
-    , getVideos
-    , getActiveVideo
     , setLastPlayedVideo
+    , getVideos
     , getLastPlayedVideo
 
     , setBadgeText
@@ -179,15 +177,14 @@ export {
 export default {
     regexInput
     , isFullScreen
-    , requestFullScreen
-    , exitFullscreen
+    , enableFullScreen
+    , disableFullscreen
     , toggleFullscreen
     , isPlaying
     , requestAction
     , getVideos
-    , getActiveVideo
-    , setLastPlayedVideo
     , getLastPlayedVideo
+    , setLastPlayedVideo
 
     , setBadgeText
     , setIcon

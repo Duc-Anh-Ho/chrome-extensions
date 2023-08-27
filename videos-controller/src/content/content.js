@@ -1,6 +1,6 @@
 "use strict";
 
-console.log("Content loaded!");
+console.info("Content loaded!");
 
 // Script Injection Technique:
 /* 

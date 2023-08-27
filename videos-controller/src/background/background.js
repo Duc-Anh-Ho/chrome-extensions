@@ -2,7 +2,7 @@
 import common from "../scripts/common.js";
 import { VIDEOS_CONFIG, COLOR, ACTION } from "../constants/constants.js";
 
-console.log("Background script loaded!");
+console.info("Background script loaded!");
 
 // Video Controller
 chrome.storage.sync.get(["videosConfig"], (result) => {
