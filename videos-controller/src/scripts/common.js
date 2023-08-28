@@ -117,7 +117,7 @@ const createContextMenu = async (config, clickEvent) => {
         }
     }
     // Create only on installed
-    await chrome.runtime.onInstalled.addListener( async () => {
+    await chrome.runtime.onInstalled.addListener(async () => {
         await chrome.contextMenus.create(config);
         console.info(`Created context menu:`, config.id);
         await chrome.contextMenus.onClicked.addListener(clickEvent);
@@ -155,6 +155,14 @@ const setStorage = async (object) => {
 const getStorage = async (keys) => {
     return await chrome.storage.sync.get(keys);
 };
+const syncStorage = (namespace, key, callback) => {
+    chrome.storage.onChanged.addListener((changes, storageNamespace) => {
+        if (storageNamespace === namespace && changes[key]) {
+            // callback(changes[key].newValue);
+            callback();
+        }
+    });
+};
 
 export {
     regexInput
@@ -175,6 +183,7 @@ export {
     , getStorage
     , getCurrentTab
     , getLastTab
+    , syncStorage
     , createContextMenu
     , createNotification
     , clearNotifications
@@ -201,6 +210,7 @@ export default {
     , getStorage
     , getCurrentTab
     , getLastTab
+    , syncStorage
     , createContextMenu
     , createNotification
     , clearNotifications

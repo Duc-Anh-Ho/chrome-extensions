@@ -1,6 +1,6 @@
 "use strict";
 const speed = 100;
-const step = 0.25;
+const step = 25;
 const seek = 10;
 const MIN_SPEED = 0;
 const MAX_SPEED = 1000;

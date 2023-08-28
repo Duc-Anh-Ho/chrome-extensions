@@ -5,19 +5,18 @@ import { VIDEOS_CONFIG, COLOR, ACTION } from "../constants/constants.js";
 console.info("Background script loaded!");
 
 // Video Controller
-chrome.storage.sync.get(["videosConfig"], (result) => {
-    let videosConfig = result.videosConfig || { ...VIDEOS_CONFIG };
+
+const setSpeedBage = async () => {
+    let storage = await common.getStorage(["videosConfig"]);
+    let videosConfig = storage.videosConfig || { ...VIDEOS_CONFIG };
     let speedTxt = (videosConfig.speed / 100).toFixed(2).toString();
-    common.setBadgeText(speedTxt, COLOR.GREEN);
-});
+    await common.setBadgeText(speedTxt, COLOR.GREEN);
+};
 
-chrome.storage.onChanged.addListener((changes, namespace) => {
-    if (namespace === "sync" && changes.videosConfig) {
-        const speedTxt = (changes.videosConfig.newValue.speed / 100).toFixed(2).toString();
-        common.setBadgeText(speedTxt, COLOR.GREEN);
-    }
-});
+setSpeedBage(); // Init
+common.syncStorage("sync", "videosConfig", setSpeedBage); // Sync
 
+// Events (message listener)
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     switch (message.action) {
         case ACTION.HIDE_PAGE_ACTION:
@@ -52,7 +51,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
                 title: "Notification Image",
                 message: "TEST",
             };
-            await common.createNotification(notiConfig_2)
+            await common.createNotification(notiConfig_2);
             break;
         case ACTION.CLEAR_NOTIFICATIONS:
             await common.clearNotifications();

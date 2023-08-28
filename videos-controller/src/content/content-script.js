@@ -1,6 +1,6 @@
 "use strict";
-import common, { isPlaying } from "../scripts/common.js";
-import { ACTION } from "../constants/constants.js";
+import common from "../scripts/common.js";
+import { VIDEOS_CONFIG, ACTION } from "../constants/constants.js";
 
 console.info("Content script loaded!");
 
@@ -20,7 +20,11 @@ const main = async () => {
             switch (e.code) {
                 case "Period":
                     if (!e.shiftKey) break;
-                    console.log("here: line #24"); // TODO: <-- DELETE 
+                    let storage = await common.getStorage(["videosConfig"]);
+                    let videosConfig = storage.videosConfig || { ...VIDEOS_CONFIG };
+                    console.log("videosConfig:", videosConfig);
+                    videosConfig.speed = Math.min(videosConfig.speed + videosConfig.step, videosConfig.MAX_SPEED - 1);
+                    await common.setStorage({ videosConfig });
                     break;
                 case "Comma":
                     if (!e.shiftKey) break;
