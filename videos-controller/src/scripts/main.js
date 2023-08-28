@@ -49,4 +49,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     closeBtn.addEventListener("click", () => {
         window.close();
     });
-});
+});xx
