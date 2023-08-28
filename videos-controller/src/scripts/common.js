@@ -148,7 +148,13 @@ const clearNotifications = async () => {
             });
         }
     });
-}
+};
+const setStorage = async (object) => {
+    await chrome.storage.sync.set(object);
+};
+const getStorage = async (keys) => {
+    return await chrome.storage.sync.get(keys);
+};
 
 export {
     regexInput
@@ -162,9 +168,11 @@ export {
     , getVideos
     , getLastPlayedVideo
 
+    , setStorage
     , setBadgeText
     , setIcon
     , removeBangeText
+    , getStorage
     , getCurrentTab
     , getLastTab
     , createContextMenu
@@ -186,9 +194,11 @@ export default {
     , getLastPlayedVideo
     , setLastPlayedVideo
 
+    , setStorage
     , setBadgeText
     , setIcon
     , removeBangeText
+    , getStorage
     , getCurrentTab
     , getLastTab
     , createContextMenu

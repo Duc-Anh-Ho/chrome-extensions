@@ -2,39 +2,35 @@
 import { VIDEOS_CONFIG, REGEX } from "../constants/constants.js";
 import common from "./common.js";
 
-console.info("Main script loaded!");
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     // Videos Controller
     const speedInp = document.getElementById("speed");
     const resetBtn = document.getElementById("reset-btn");
-    let videosConfig = { ...VIDEOS_CONFIG };
-    const storeVideo = async (videosConfig) => {
-        await chrome.storage.sync.set({ videosConfig });
-    };
-    const setSpeed = async () => {
-        await chrome.storage.sync.get(["videosConfig"], (result) => {
-            videosConfig = result.videosConfig || { ...VIDEOS_CONFIG };
-            speedInp.value = (videosConfig.speed / 100).toFixed(2);
-        });
-    };
+    let videosConfig;
     const isValidSpeed = (speed) => {
         const { MIN_SPEED, MAX_SPEED } = VIDEOS_CONFIG;
         return !isNaN(speed) && speed >= MIN_SPEED && speed < MAX_SPEED;
     };
+    const setSpeed = async () => {
+        let storage = await common.getStorage(["videosConfig"])
+        videosConfig = storage.videosConfig || { ...VIDEOS_CONFIG };;
+        speedInp.value = (videosConfig.speed / 100).toFixed(2);
+    };
 
-    setSpeed();
+    setSpeed(); // Init
     speedInp.addEventListener("input", common.regexInput(REGEX.CHR));
-    speedInp.addEventListener("change", (e) => {
+    speedInp.addEventListener("change", async (e) => {
         const intSpeed = parseInt(speedInp.value * 100);
         if (isValidSpeed(intSpeed)) {
             videosConfig.speed = intSpeed;
         }
-        storeVideo(videosConfig);
+        await common.setStorage({ videosConfig });
         setSpeed();
     });
-    resetBtn.addEventListener("click", () => {
-        storeVideo(VIDEOS_CONFIG);
+    resetBtn.addEventListener("click", async () => {
+        videosConfig = { ...VIDEOS_CONFIG };
+        await common.setStorage({ videosConfig });
         setSpeed();
     });
     chrome.storage.onChanged.addListener((changes, namespace) => {

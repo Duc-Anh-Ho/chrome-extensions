@@ -27,7 +27,9 @@ const main = async () => {
                     console.log("here: line #28"); // TODO: <-- DELETE 
                     break;
                 // case "Space":
+                case "KeyP":
                 case "KeyK":
+                    console.log("here: line #32"); // TODO: <-- DELETE 
                     activeVideo === video ? video.paused ? video.play() : video.pause() : video.pause();
                     break;
                 case "KeyM":
