@@ -2,7 +2,6 @@
 import { VIDEOS_CONFIG, REGEX } from "../constants/constants.js";
 import common from "./common.js";
 
-
 document.addEventListener("DOMContentLoaded", async () => {
     // Videos Controller
     const speedInp = document.getElementById("speed");
@@ -14,8 +13,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const setSpeed = async (speed) => {
         let storage = await common.getStorage(["videosConfig"])
         let videosConfig = storage.videosConfig || { ...VIDEOS_CONFIG };;
-        let displaySpeed = speed || videosConfig.speed;
-        speedInp.value = (displaySpeed / 100).toFixed(2);
+        speed = speed || videosConfig.speed;
+        speedInp.value = (speed / 100).toFixed(2);
     };
 
     await setSpeed(); // Init

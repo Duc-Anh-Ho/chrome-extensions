@@ -5,6 +5,27 @@ const regexInput = (regex) => {
         event.target.value = event.target.value.replace(regex, "");
     };
 };
+const debounce = (callback, delay) => {
+    delay = delay || 100; // Default
+    let timer = null;
+    return (...args) => {
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => {
+            callback(...args);
+        }, delay);
+    }
+};
+const throttle = (callback, delay) => {
+    delay = delay || 100; // Default
+    let lastCall = 0;
+    return (...args) => {
+        const now = new Date().getTime();
+        if (now - lastCall < delay) return;
+        lastCall = now;
+        return callback(...args);
+    }
+
+}
 const isFullScreen = (doc) => !!(
     doc.fullscreenElement ||
     doc.webkitFullscreenElement ||
