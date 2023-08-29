@@ -6,25 +6,38 @@ const regexInput = (regex) => {
     };
 };
 const debounce = (callback, delay) => {
-    delay = delay || 100; // Default
+    delay = delay || 10; // Default
     let timer = null;
     return (...args) => {
         if (timer) clearTimeout(timer);
         timer = setTimeout(() => {
             callback(...args);
         }, delay);
-    }
+    };
 };
 const throttle = (callback, delay) => {
-    delay = delay || 100; // Default
+    delay = delay || 10; // Default
     let lastCall = 0;
     return (...args) => {
         const now = new Date().getTime();
         if (now - lastCall < delay) return;
         lastCall = now;
-        return callback(...args);
-    }
-
+        callback(...args);
+    };
+};
+const throttleDebounced = (callback, throttleDelay, debounceDelay) => {
+    throttleDelay = throttleDelay || 10; // Default
+    debounceDelay = debounceDelay || 10; // Default
+    return throttle( debounce( async (...args) => {
+        await callback(...args);
+    }, debounceDelay), throttleDelay);
+};
+const debounceThottled = (callback, debounceDelay, throttleDelay) => {
+    debounceDelay = debounceDelay || 10; // Default
+    throttleDelay = throttleDelay || 10; // Default
+    return debounce( throttle( async (...args) => {
+        await callback(...args);
+    }, throttleDelay), debounceDelay);
 }
 const isFullScreen = (doc) => !!(
     doc.fullscreenElement ||
@@ -39,18 +52,20 @@ const isPlaying = (video) => !!(
     && video.readyState > 2
 );
 const enableFullScreen = async (doc, elem) => {
-    if (elem.webkitRequestFullScreen || doc.webkitFullscreenEnabled) {
-        await elem.webkitRequestFullScreen();
-    } else if (elem.mozRequestFullScreen || doc.mozFullScreenEnabled) {
-        await elem.mozRequestFullScreen();
-    } else if (elem.msRequestFullscreen || doc.msFullscreenEnabled) {
-        await elem.msRequestFullscreen();
-    } else if (elem.requestFullscree || doc.fullscreenEnabled) {
-        await elem.requestFullscreen();
+    if (elem.webkitEnterFullscreen && doc.webkitFullscreenEnabled) {
+        await elem.webkitEnterFullscreen();
+    } else if (elem.webkitRequestFullScreen && doc.webkitFullscreenEnabled) {
+        await doc.webkitEnterFullscreen();
+    } else if (elem.mozRequestFullScreen && doc.mozFullScreenEnabled) {
+        await doc.mozRequestFullScreen();
+    } else if (elem.msRequestFullscreen && doc.msFullscreenEnabled) {
+        await doc.msRequestFullscreen();
+    } else if (elem.requestFullscreen && doc.fullscreenEnabled) {
+        await doc.requestFullscreen();
     }
 };
-const disableFullscreen = async (doc) => {
-    if (doc.exitFullscreen ) {
+const disableFullscreen = async (doc, elem) => {
+    if (doc.exitFullscreen) {
         await doc.exitFullscreen();
     } else if (doc.webkitFullscreenElement) {
         await doc.webkitExitFullscreen();
@@ -187,6 +202,10 @@ const syncStorage = (namespace, key, callback) => {
 
 export {
     regexInput
+    , debounce
+    , throttle
+    , debounceThottled
+    , throttleDebounced
     , isFullScreen
     , enableFullScreen
     , disableFullscreen
@@ -214,6 +233,10 @@ export {
 
 export default {
     regexInput
+    , debounce
+    , throttle
+    , debounceThottled
+    , throttleDebounced
     , isFullScreen
     , enableFullScreen
     , disableFullscreen

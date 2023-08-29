@@ -17,7 +17,6 @@
         , "notifications"
         , "contextMenus"
         , "nativeMessaging"
-        , "fullscreen"
     ],
     "host_permissions": [
         "<all_urls>"
