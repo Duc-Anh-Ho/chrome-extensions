@@ -18,31 +18,35 @@ const main = async () => {
         videosConfig.speed = Math.max(videosConfig.speed - videosConfig.step, 0);
         await common.setStorage({ videosConfig });
     }, 300, 200);
-    const syncPlaybackRate = async (speed) => {
+    const resetSpeed = common.throttleDebounced(async() => {
+        let videosConfig = { ...VIDEOS_CONFIG };
+        await common.setStorage({ videosConfig });
+    }, 300, 300);
+    const syncPlaybackRate = common.throttleDebounced(async (speed) => {
         let storage = await common.getStorage(["videosConfig"]);
         let videosConfig = storage.videosConfig || { ...VIDEOS_CONFIG };
         let videos = common.getVideos(document);
         speed = speed || videosConfig.speed;
         for (const video of videos) {
-            console.log("1 - video.playbackRate:", video.playbackRate);
             video.playbackRate = (speed / 100).toFixed(2);
         }
-    }
+    }, 200, 100);
 
     common.syncStorage("sync", "videosConfig", syncPlaybackRate); // Sync
     
     // Events
-    window.addEventListener('load', () => {
-        console.log("here: line #35"); // TODO: <-- DELETE
-        // TODO: Find event load more videos? 
-    })
     document.addEventListener("click", async (e) => {
-        common.setLastPlayedVideo(document); // Refresh/Update 
+        // Refresh/Update 
+        common.setLastPlayedVideo(document); 
+        syncPlaybackRate();
+    });
+    addEventListener("scroll", (e) => {
+        syncPlaybackRate();
     });
     document.addEventListener("keydown", async (e) => {
-        // console.log("e.code:", e.code); // TODO: DELETE HERE
         // Refresh/Update variables
         common.setLastPlayedVideo(document);
+        syncPlaybackRate();
         let videos = common.getVideos(document); 
         switch (e.code) {
             case "Period":
@@ -56,6 +60,10 @@ const main = async () => {
             case "Slash":
                 if (!e.shiftKey) break;
                 await common.requestAction(ACTION.CREATE_NOTIFICATION);
+                break;
+            case "Digit0":
+                if (!e.shiftKey) break;
+                resetSpeed();
                 break;
             case "Digit1":
                 await common.requestAction(ACTION.CLEAR_NOTIFICATIONS);
@@ -73,9 +81,6 @@ const main = async () => {
         videos_loop: for (const video of videos) {
             let activeVideo = common.isPlaying(video) ? video : common.getLastPlayedVideo(document);
             switch (e.code) {
-                case "Digit1":
-                    console.log("video.playbackRate:", video.playbackRate);
-                    break;
                 // Pause Fn
                 // case "Space":
                 case "KeyP":

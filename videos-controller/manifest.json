@@ -40,6 +40,7 @@
     },
     "content_scripts": [{
         "matches": ["<all_urls>"],
+        "exclude_matches": ["*://youtube.com/*"],
         "css": ["./src/styles/css/main.css"],
         "js": ["./src/content/content.js"],
         "run_at": "document_end"
