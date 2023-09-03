@@ -21,7 +21,7 @@ const main = async () => {
     const resetSpeed = common.throttleDebounced(async() => {
         let videosConfig = { ...VIDEOS_CONFIG };
         await common.setStorage({ videosConfig });
-    }, 300, 300);
+    }, 300, 200);
     const syncPlaybackRate = common.throttleDebounced(async (speed) => {
         let storage = await common.getStorage(["videosConfig"]);
         let videosConfig = storage.videosConfig || { ...VIDEOS_CONFIG };
@@ -30,7 +30,7 @@ const main = async () => {
         for (const video of videos) {
             video.playbackRate = (speed / 100).toFixed(2);
         }
-    }, 200, 100);
+    }, 800, 600);
 
     common.syncStorage("sync", "videosConfig", syncPlaybackRate); // Sync
     
@@ -44,6 +44,7 @@ const main = async () => {
         syncPlaybackRate();
     });
     document.addEventListener("keydown", async (e) => {
+        console.log("e.code:", e.code);
         // Refresh/Update variables
         common.setLastPlayedVideo(document);
         syncPlaybackRate();

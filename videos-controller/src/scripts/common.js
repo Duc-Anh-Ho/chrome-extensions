@@ -189,7 +189,8 @@ const setStorage = async (object) => {
     await chrome.storage.sync.set(object);
 };
 const getStorage = async (keys) => {
-    return await chrome.storage.sync.get(keys);
+    console.log("keys", keys);
+    return await chrome.storage.sync?.get(keys);
 };
 const syncStorage = (namespace, key, callback) => {
     chrome.storage.onChanged.addListener((changes, storageNamespace) => {
