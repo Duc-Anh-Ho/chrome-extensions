@@ -1,106 +1,51 @@
+"use strict";
 import { VIDEOS_CONFIG, REGEX } from "../constants/constants.js";
 import common from "./common.js";
 
-$(document).ready(() => {
+document.addEventListener("DOMContentLoaded", async () => {
     // Videos Controller
-    const videos = $("video"); // $$("video")
-    const speedInp = $("#speed");
-    const resetBtn = $("#reset-btn");
-    let videosConfig = { ...VIDEOS_CONFIG };
-    const storeVideo = (videosConfig) => {
-        chrome.storage.sync.set({ videosConfig});
-    };
-    const setSpeed = () => {
-        chrome.storage.sync.get(["videosConfig"], (result) => {
-            videosConfig = result.videosConfig || { ...VIDEOS_CONFIG };
-            speedInp.val((videosConfig.speed / 100).toFixed(2));
-        });
-    };
+    const speedInp = document.getElementById("speed");
+    const resetBtn = document.getElementById("reset-btn");
     const isValidSpeed = (speed) => {
         const { MIN_SPEED, MAX_SPEED } = VIDEOS_CONFIG;
         return !isNaN(speed) && speed >= MIN_SPEED && speed < MAX_SPEED;
-    }
+    };
+    const setSpeed = async (speed) => {
+        let storage = await common.getStorage(["videosConfig"]);
+        let videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
+        speed = speed || videosConfig.speed;
+        speedInp.value = (speed / 100).toFixed(2);
+    };
 
-    setSpeed();
-    speedInp.on("input", common.regexInput(REGEX.CHR));
-    speedInp.on("change", (e) => {
-        const intSpeed = parseInt(speedInp.val() * 100);
-        if (isValidSpeed(intSpeed)) {
+    await setSpeed(); // Init
+    common.syncStorage("sync", "videosConfig", setSpeed); // Sync
+    
+    // Events
+    speedInp.addEventListener("input", common.regexInput(REGEX.CHR));
+    speedInp.addEventListener("change", async (e) => {
+        let storage = await common.getStorage(["videosConfig"]);
+        let videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
+        const intSpeed = parseInt(speedInp.value * 100);
+        if (isValidSpeed(intSpeed)) {B
             videosConfig.speed = intSpeed;
+            await common.setStorage({ videosConfig });
+        } else {
+            speedInp.value = (videosConfig.speed / 100).toFixed(2);
         }
-        storeVideo(videosConfig);
-        setSpeed();
     });
-    resetBtn.on("click", () => {
-        storeVideo(VIDEOS_CONFIG);
-        setSpeed();
-    });
-    chrome.storage.onChanged.addListener((changes, namespace) => {
-        if (namespace === "sync" && changes.videosConfig) {
-            setSpeed();
-        }
+    resetBtn.addEventListener("click", async () => {
+        let videosConfig = { ...VIDEOS_CONFIG };
+        await common.setStorage({ videosConfig });
     });
 
     // Mode Controller
-    const modeCheckbox = $("#design-mode");
-    const storeMode = (modeConfig) => {
-        chrome.storage.sync.set({ modeConfig});
+    const modeCheckbox = document.getElementById("design-mode");
+    const storeMode = async (modeConfig) => {
+        await common.setStorage({ modeConfig });
     };
     // Else
-    const closeBtn = $("#close-btn");
-    
-    closeBtn.on("click", () => {
+    const closeBtn = document.getElementById("close-btn");
+    closeBtn.addEventListener("click", () => {
         window.close();
-    });
-
-    const clearNotifications = () => {
-        chrome.notifications.getAll((notifications) => {
-            for (const notificationId in notifications) {
-                chrome.notifications.clear(notificationId, (isCleared) => {
-                    if (isCleared) {
-                        console.log(`Notification ${notificationId} cleared.`);
-                    } else {
-                        console.error(`Notification ${notificationId} could not be cleared.`);
-                    }
-                });
-            }
-        });
-    };
-
-    $(document).on("keydown", (e) => {
-        if (e.shiftKey && e.code === "Slash") {
-            const notiId = `notification-id-${Date.now()}`;
-            const notiClick = (id) => {
-                console.log("Notification clicked:", id);
-            };
-
-            const notiConfig = {
-                type: "basic",
-                iconUrl: "../../assets/imgs/Logo_VBAKC_48.png",
-                title: "Notification Basic",
-                message: "TEST",
-            };
-
-            const notiConfig_2 = {
-                type: "image",
-                iconUrl: "../../assets/imgs/Logo_VBAKC_48.png",
-                imageUrl: "../../assets/imgs/Logo_VBAKC_48.png",
-                title: "Notification Image",
-                message: "TEST",
-            };
-
-            // chrome.notifications.create(notiId, notiConfig, (id) => {
-            //     console.log("Created Nofication ID:", id);
-            // });
-
-            chrome.notifications.create(notiId, notiConfig_2, (id) => {
-                console.log("Created Nofication:", id);
-            });
-
-            chrome.notifications.onClicked.addListener(notiClick);
-        }
-        if (e.code === "Numpad0") {
-            clearNotifications();
-        }
     });
 });
