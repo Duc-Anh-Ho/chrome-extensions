@@ -8,7 +8,7 @@ console.info("Background script loaded!");
 
 const setSpeedBage = async () => {
     let storage = await common.getStorage(["videosConfig"]);
-    let videosConfig = storage.videosConfig || { ...VIDEOS_CONFIG };
+    let videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
     let speedTxt = (videosConfig.speed / 100).toFixed(2).toString();
     await common.setBadgeText(speedTxt, COLOR.GREEN);
 };

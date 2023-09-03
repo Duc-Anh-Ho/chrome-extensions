@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
     const setSpeed = async (speed) => {
         let storage = await common.getStorage(["videosConfig"]);
-        let videosConfig = storage.videosConfig || { ...VIDEOS_CONFIG };
+        let videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
         speed = speed || videosConfig.speed;
         speedInp.value = (speed / 100).toFixed(2);
     };
@@ -24,9 +24,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     speedInp.addEventListener("input", common.regexInput(REGEX.CHR));
     speedInp.addEventListener("change", async (e) => {
         let storage = await common.getStorage(["videosConfig"]);
-        let videosConfig = storage.videosConfig || { ...VIDEOS_CONFIG };
+        let videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
         const intSpeed = parseInt(speedInp.value * 100);
-        if (isValidSpeed(intSpeed)) {
+        if (isValidSpeed(intSpeed)) {B
             videosConfig.speed = intSpeed;
             await common.setStorage({ videosConfig });
         } else {

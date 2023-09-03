@@ -8,31 +8,38 @@ const main = async () => {
     // VIDEO controllers
     const increaseSpeed = common.throttleDebounced(async () => {
         let storage = await common.getStorage(["videosConfig"]);
-        let videosConfig = storage.videosConfig || { ...VIDEOS_CONFIG };
+        let videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
         videosConfig.speed = Math.min(videosConfig.speed + videosConfig.step, videosConfig.MAX_SPEED - 1);
         await common.setStorage({ videosConfig });
-    }, 300, 200);
+    }, 200, 50);
     const decreaseSpeed = common.throttleDebounced(async () => {
         let storage = await common.getStorage(["videosConfig"]);
-        let videosConfig = storage.videosConfig || { ...VIDEOS_CONFIG };
+        let videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
         videosConfig.speed = Math.max(videosConfig.speed - videosConfig.step, 0);
         await common.setStorage({ videosConfig });
-    }, 300, 200);
+    }, 200, 50);
     const resetSpeed = common.throttleDebounced(async() => {
         let videosConfig = { ...VIDEOS_CONFIG };
         await common.setStorage({ videosConfig });
-    }, 300, 200);
+    }, 200, 50);
     const syncPlaybackRate = common.throttleDebounced(async (speed) => {
         let storage = await common.getStorage(["videosConfig"]);
-        let videosConfig = storage.videosConfig || { ...VIDEOS_CONFIG };
+        let videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
         let videos = common.getVideos(document);
         speed = speed || videosConfig.speed;
         for (const video of videos) {
+            // let activeVideo = common.isPlaying(video) ? video : common.getLastPlayedVideo(document);
+            // activeVideo.playbackRate = (speed / 100).toFixed(2);
             video.playbackRate = (speed / 100).toFixed(2);
         }
-    }, 800, 600);
+    }, 300, 50);
 
-    common.syncStorage("sync", "videosConfig", syncPlaybackRate); // Sync
+    // Auto Sync
+    common.syncStorage("sync", "videosConfig", syncPlaybackRate); 
+    window.setInterval(() => {
+        syncPlaybackRate();
+    }, 1000);
+
     
     // Events
     document.addEventListener("click", async (e) => {
@@ -44,27 +51,22 @@ const main = async () => {
         syncPlaybackRate();
     });
     document.addEventListener("keydown", async (e) => {
-        console.log("e.code:", e.code);
         // Refresh/Update variables
         common.setLastPlayedVideo(document);
         syncPlaybackRate();
         let videos = common.getVideos(document); 
         switch (e.code) {
             case "Period":
-                if (!e.shiftKey) break;
-                increaseSpeed();
+                if (e.shiftKey) increaseSpeed();
                 break;
             case "Comma":
-                if (!e.shiftKey) break;
-                decreaseSpeed();
+                if (e.shiftKey) decreaseSpeed();
                 break;
             case "Slash":
-                if (!e.shiftKey) break;
-                await common.requestAction(ACTION.CREATE_NOTIFICATION);
+                if (e.shiftKey) await common.requestAction(ACTION.CREATE_NOTIFICATION);
                 break;
             case "Digit0":
-                if (!e.shiftKey) break;
-                resetSpeed();
+                if (e.shiftKey) resetSpeed();
                 break;
             case "Digit1":
                 await common.requestAction(ACTION.CLEAR_NOTIFICATIONS);

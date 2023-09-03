@@ -52,16 +52,17 @@ const isPlaying = (video) => !!(
     && video.readyState > 2
 );
 const enableFullScreen = async (doc, elem) => {
+    // Chrome, Safari, and Opera
     if (elem.webkitEnterFullscreen && doc.webkitFullscreenEnabled) {
-        await elem.webkitEnterFullscreen();
-    } else if (elem.webkitRequestFullScreen && doc.webkitFullscreenEnabled) {
-        await doc.webkitEnterFullscreen();
+        await elem.webkitEnterFullscreen(); 
+    // Firefox
     } else if (elem.mozRequestFullScreen && doc.mozFullScreenEnabled) {
-        await doc.mozRequestFullScreen();
+        await elem.mozRequestFullScreen();
+    // IE/Edge
     } else if (elem.msRequestFullscreen && doc.msFullscreenEnabled) {
-        await doc.msRequestFullscreen();
+        await elem.msRequestFullscreen();
     } else if (elem.requestFullscreen && doc.fullscreenEnabled) {
-        await doc.requestFullscreen();
+        await elem.requestFullscreen();
     }
 };
 const disableFullscreen = async (doc, elem) => {
@@ -186,11 +187,22 @@ const clearNotifications = async () => {
     });
 };
 const setStorage = async (object) => {
-    await chrome.storage.sync.set(object);
+    try {
+        await chrome.storage.sync.set(object);
+    } catch (err) {
+        // Upgrade extension will lost storage, so reload required.
+        window.location.reload();
+    }
 };
 const getStorage = async (keys) => {
-    console.log("keys", keys);
-    return await chrome.storage.sync?.get(keys);
+    try {
+        // console.log("keys:", keys);
+        return await chrome.storage.sync.get(keys)
+    } catch (err) {
+        // console.error('Error:', err);
+        // Upgrade extension will lost storage, so reload required.
+        window.location.reload();
+    }
 };
 const syncStorage = (namespace, key, callback) => {
     chrome.storage.onChanged.addListener((changes, storageNamespace) => {
