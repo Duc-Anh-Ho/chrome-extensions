@@ -1,2 +1,2 @@
 "use strict";
-console.log("Option script loaded!");
+console.info("Option script loaded!");
