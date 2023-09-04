@@ -27,19 +27,26 @@ const main = async () => {
         let storage = await common.getStorage(["videosConfig"]);
         let videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
         let videos = common.getVideos(document);
+        if (!videos?.length) return;
         speed = speed || videosConfig.speed;
-        for (const video of videos) {
-            activeVideo = common.isPlaying(video) ? video : common.getLastPlayedVideo(document);
-            activeVideo.playbackRate = (speed / 100).toFixed(2);
+        videos_loop:for (const video of videos) {
+            // activeVideo = common.isPlaying(video) ? video : common.getLastPlayedVideo(document);
             // video.playbackRate = (speed / 100).toFixed(2);
+            if (common.isPlaying(video)) {
+                activeVideo = video;
+                break videos_loop;
+            } else {
+                activeVideo = common.getLastPlayedVideo(document)
+            }
         }
-    }, 500, 100);
+        activeVideo.playbackRate = (speed / 100).toFixed(2);
+    }, 500, 200);
 
     // Auto Sync
     common.syncStorage("sync", "videosConfig", syncPlaybackRate); 
     window.setInterval(() => {
         syncPlaybackRate();
-    }, 700);
+    }, 750);
 
     // Events
     document.addEventListener("click", async (e) => {
@@ -54,7 +61,6 @@ const main = async () => {
         // Refresh/Update variables
         common.setLastPlayedVideo(document);
         syncPlaybackRate();
-        let videos = common.getVideos(document); 
         switch (e.code) {
             case "Period":
                 if (e.shiftKey) increaseSpeed();
@@ -64,6 +70,17 @@ const main = async () => {
                 break;
             case "Slash":
                 if (e.shiftKey) await common.requestAction(ACTION.CREATE_NOTIFICATION);
+                break;
+            case "KeyP":
+            case "KeyK":
+                activeVideo.paused ? activeVideo.play() : activeVideo.pause();
+                break;
+            case "KeyM":
+                activeVideo.muted = !activeVideo.muted ;
+                break;
+            case "Enter": if (!e.altKey) break;
+            case "KeyF":
+                await common.toggleFullscreen(document, activeVideo); 
                 break;
             case "Digit0":
                 if (e.shiftKey) resetSpeed();
@@ -79,32 +96,6 @@ const main = async () => {
                 break;
             default:
                 break;
-        }
-        if (!videos?.length) return;
-        videos_loop: for (const video of videos) {
-            // let activeVideo = common.isPlaying(video) ? video : common.getLastPlayedVideo(document);
-            switch (e.code) {
-                // Pause Fn
-                // case "Space":
-                case "KeyP":
-                case "KeyK":
-                    activeVideo === video ? video.paused ? video.play() : video.pause() : video.pause();
-                    break;
-                // Mute Fn
-                case "KeyM":
-                    video.muted = activeVideo === video ? !video.muted : true;
-                    break;
-                // Fullscreen Fn
-                case "Enter": if (!e.altKey) break;
-                case "KeyF":
-                    if (activeVideo === video) {
-                        await common.toggleFullscreen(document, video);
-                        break videos_loop; // For 2 videos playing
-                    }
-                    break;
-                default:
-                    break;
-            }
         }
     });
 }
