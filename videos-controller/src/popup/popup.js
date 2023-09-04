@@ -1,2 +1,2 @@
 "use strict";
-console.log("Popup script loaded!");
+console.info("Popup script loaded!");

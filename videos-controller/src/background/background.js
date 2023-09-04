@@ -6,15 +6,15 @@ console.info("Background script loaded!");
 
 // Video Controller
 
-const setSpeedBage = async () => {
-    let storage = await common.getStorage(["videosConfig"]);
-    let videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
-    let speedTxt = (videosConfig.speed / 100).toFixed(2).toString();
-    await common.setBadgeText(speedTxt, COLOR.GREEN);
+const setSpeedBage = async (color) => {
+    const storage = await common.getStorage(["videosConfig"]);
+    const videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
+    const speedTxt = (videosConfig.speed / 100).toFixed(2).toString();
+    await common.setBadgeText(speedTxt, color);
 };
 
-setSpeedBage(); // Init
-common.syncStorage("sync", "videosConfig", setSpeedBage); // Sync
+setSpeedBage(COLOR.GRAY); // Init
+common.syncStorage("sync", "videosConfig", setSpeedBage.bind(null, COLOR.RED)); // Sync
 
 // Events (message listener)
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
@@ -25,7 +25,8 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
                 "48" : "../../assets/imgs/Logo_VBAKC_48_grey.png",
                 "128" : "../../assets/imgs/Logo_VBAKC_128_grey.png"
             }
-            await common.dissableAction(sender.tab.id);
+            // await common.dissableAction(sender.tab.id);
+            setSpeedBage (COLOR.GRAY);
             await common.setIcon(disableIcons, sender.tab.id);
             break;
         case ACTION.SHOW_PAGE_ACTION:
@@ -34,7 +35,8 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
                 "48" : "../../assets/imgs/Logo_VBAKC_48.png",
                 "128" : "../../assets/imgs/Logo_VBAKC_128.png"
             }
-            await common.enableAction(sender.tab.id);
+            // await common.enableAction(sender.tab.id);
+            setSpeedBage (COLOR.GREEN);
             await common.setIcon(enableIcons, sender.tab.id);
             break;
         case ACTION.CREATE_NOTIFICATION:

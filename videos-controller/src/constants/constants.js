@@ -21,9 +21,11 @@ const REGEX = {
 
 const GREEN = "#00ff00";
 const RED = "#dc3545";
+const GRAY = "#f1f1f1";
 const COLOR = {
     GREEN
     , RED
+    , GRAY
 }
 
 const CREATE_NOTIFICATION = "create-notification";
