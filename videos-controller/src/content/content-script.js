@@ -6,6 +6,7 @@ console.info("Content script loaded!");
 
 const main = async () => {
     // VIDEO controllers
+    let activeVideo;
     const increaseSpeed = common.throttleDebounced(async () => {
         let storage = await common.getStorage(["videosConfig"]);
         let videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
@@ -28,9 +29,9 @@ const main = async () => {
         let videos = common.getVideos(document);
         speed = speed || videosConfig.speed;
         for (const video of videos) {
-            // let activeVideo = common.isPlaying(video) ? video : common.getLastPlayedVideo(document);
-            // activeVideo.playbackRate = (speed / 100).toFixed(2);
-            video.playbackRate = (speed / 100).toFixed(2);
+            activeVideo = common.isPlaying(video) ? video : common.getLastPlayedVideo(document);
+            activeVideo.playbackRate = (speed / 100).toFixed(2);
+            // video.playbackRate = (speed / 100).toFixed(2);
         }
     }, 300, 50);
 
@@ -38,9 +39,8 @@ const main = async () => {
     common.syncStorage("sync", "videosConfig", syncPlaybackRate); 
     window.setInterval(() => {
         syncPlaybackRate();
-    }, 1000);
+    }, 500);
 
-    
     // Events
     document.addEventListener("click", async (e) => {
         // Refresh/Update 
@@ -82,7 +82,7 @@ const main = async () => {
         }
         if (!videos?.length) return;
         videos_loop: for (const video of videos) {
-            let activeVideo = common.isPlaying(video) ? video : common.getLastPlayedVideo(document);
+            // let activeVideo = common.isPlaying(video) ? video : common.getLastPlayedVideo(document);
             switch (e.code) {
                 // Pause Fn
                 // case "Space":

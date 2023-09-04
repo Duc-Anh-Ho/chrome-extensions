@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         let storage = await common.getStorage(["videosConfig"]);
         let videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
         const intSpeed = parseInt(speedInp.value * 100);
-        if (isValidSpeed(intSpeed)) {B
+        if (isValidSpeed(intSpeed)) {
             videosConfig.speed = intSpeed;
             await common.setStorage({ videosConfig });
         } else {
