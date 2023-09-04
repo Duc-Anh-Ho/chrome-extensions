@@ -10,7 +10,7 @@ const main = async () => {
     const increaseSpeed = common.throttleDebounced(async () => {
         let storage = await common.getStorage(["videosConfig"]);
         let videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
-        videosConfig.speed = Math.min(videosConfig.speed + videosConfig.step, videosConfig.MAX_SPEED - 1);
+        videosConfig.speed = Math.min(videosConfig.speed + videosConfig.step, videosConfig.MAX_SPEED);
         await common.setStorage({ videosConfig });
     }, 200, 50);
     const decreaseSpeed = common.throttleDebounced(async () => {
@@ -33,13 +33,13 @@ const main = async () => {
             activeVideo.playbackRate = (speed / 100).toFixed(2);
             // video.playbackRate = (speed / 100).toFixed(2);
         }
-    }, 300, 50);
+    }, 500, 100);
 
     // Auto Sync
     common.syncStorage("sync", "videosConfig", syncPlaybackRate); 
     window.setInterval(() => {
         syncPlaybackRate();
-    }, 500);
+    }, 700);
 
     // Events
     document.addEventListener("click", async (e) => {
