@@ -128,7 +128,6 @@ const enableAction = async (tabId) => {
 };
 const dissableAction = async (tabId) => {
     await chrome.action.disable(tabId);
-    await chrome.action.setBadgeText({ text: "" });
 };
 const requestAction = async (action) => {
     await chrome.runtime.sendMessage({ action });
@@ -196,7 +195,6 @@ const setStorage = async (object) => {
 };
 const getStorage = async (keys) => {
     try {
-        // console.log("keys:", keys);
         return await chrome.storage.sync.get(keys)
     } catch (err) {
         // console.error('Error:', err);

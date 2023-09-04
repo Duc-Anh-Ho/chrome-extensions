@@ -10,21 +10,21 @@ document.addEventListener("DOMContentLoaded", async () => {
         const { MIN_SPEED, MAX_SPEED } = VIDEOS_CONFIG;
         return !isNaN(speed) && speed >= MIN_SPEED && speed < MAX_SPEED;
     };
-    const setSpeed = async (speed) => {
-        let storage = await common.getStorage(["videosConfig"]);
-        let videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
-        speed = speed || videosConfig.speed;
+    const initSpeed = async () => {
+        const storage = await common.getStorage(["videosConfig"]);
+        const videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
+        const speed = videosConfig.speed;
         speedInp.value = (speed / 100).toFixed(2);
     };
 
-    await setSpeed(); // Init
-    common.syncStorage("sync", "videosConfig", setSpeed); // Sync
+    await initSpeed(); // Init
+    common.syncStorage("sync", "videosConfig", initSpeed); // Sync
     
     // Events
     speedInp.addEventListener("input", common.regexInput(REGEX.CHR));
     speedInp.addEventListener("change", async (e) => {
-        let storage = await common.getStorage(["videosConfig"]);
-        let videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
+        const storage = await common.getStorage(["videosConfig"]);
+        const videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
         const intSpeed = parseInt(speedInp.value * 100);
         if (isValidSpeed(intSpeed)) {
             videosConfig.speed = intSpeed;
@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
     resetBtn.addEventListener("click", async () => {
-        let videosConfig = { ...VIDEOS_CONFIG };
+        const videosConfig = { ...VIDEOS_CONFIG };
         await common.setStorage({ videosConfig });
     });
 
