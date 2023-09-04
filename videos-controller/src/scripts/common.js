@@ -46,9 +46,9 @@ const isFullScreen = (doc) => !!(
     doc.msFullscreenElement
 );
 const isPlaying = (video) => !!(
-    video.currentTime > 0 
-    && !video.paused 
+    !video.paused 
     && !video.ended 
+    && video.currentTime > 0 
     && video.readyState > 2
 );
 const enableFullScreen = async (doc, elem) => {
