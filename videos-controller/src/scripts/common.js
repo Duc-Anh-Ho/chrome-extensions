@@ -84,7 +84,6 @@ const toggleFullscreen = async (doc, elem) => {
     }
 };
 const getVideos = (doc) => {
-    // return [ ...doc.querySelectorAll("video")]; // $$("video")
     return doc.querySelectorAll("video"); // $$("video")
 };
 const setLastPlayedVideo = (doc) => {
@@ -109,18 +108,12 @@ const getLastPlayedVideo = (doc) => {
 };
 
 // CHROME API
-const getCurrentTab = async () => {
-    const queryOptions = { 
-        active: true,
-        currentWindow: true 
-    };
+const getCurrentTabs = async () => {
+    const queryOptions = { active: true, currentWindow: true };
     return await chrome.tabs.query(queryOptions);
 };
 const getLastTab = async () => {
-    const queryOptions = { 
-        active: true
-        , lastFocusedWindow: true 
-    };
+    const queryOptions = { active: true, lastFocusedWindow: true };
     return await chrome.tabs.query(queryOptions);
 };
 const enableAction = async (tabId) => {
@@ -232,8 +225,8 @@ export {
     , setIcon
     , removeBangeText
     , getStorage
-    , getCurrentTab
-    , getLastTab
+    , getCurrentTabs // Background Only
+    , getLastTab // Background Only
     , syncStorage
     , createContextMenu
     , createNotification
@@ -263,8 +256,8 @@ export default {
     , setIcon
     , removeBangeText
     , getStorage
-    , getCurrentTab
-    , getLastTab
+    , getCurrentTabs // Background Only 
+    , getLastTab // Background Only  
     , syncStorage
     , createContextMenu
     , createNotification

@@ -18,8 +18,10 @@ common.syncStorage("sync", "videosConfig", setSpeedBage.bind(null, COLOR.RED)); 
 
 // Events (message listener)
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+    let currentTabs = await common.getCurrentTabs();
     switch (message.action) {
         case ACTION.HIDE_PAGE_ACTION:
+            if (currentTabs.some((tab) => tab.id !== sender.tab.id)) return;
             const disableIcons = { 
                 "16" : "../../assets/imgs/Logo_VBAKC_18_grey.png",
                 "48" : "../../assets/imgs/Logo_VBAKC_48_grey.png",
@@ -30,6 +32,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
             await common.setIcon(disableIcons, sender.tab.id);
             break;
         case ACTION.SHOW_PAGE_ACTION:
+            if (currentTabs.some((tab) => tab.id !== sender.tab.id)) return;
             const enableIcons = { 
                 "16" : "../../assets/imgs/Logo_VBAKC_18.png",
                 "48" : "../../assets/imgs/Logo_VBAKC_48.png",

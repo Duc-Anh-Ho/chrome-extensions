@@ -12,13 +12,13 @@ const main = async () => {
         const videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
         videosConfig.speed = Math.min(videosConfig.speed + videosConfig.step, videosConfig.MAX_SPEED);
         await common.setStorage({ videosConfig });
-    }, 200, 50);
+    }, 100, 50);
     const decreaseSpeed = common.throttleDebounced(async () => {
         const storage = await common.getStorage(["videosConfig"]);
         const videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
         videosConfig.speed = Math.max(videosConfig.speed - videosConfig.step, 0);
         await common.setStorage({ videosConfig });
-    }, 200, 50);
+    }, 100, 50);
     const setSpeed = common.throttleDebounced(async (speed) => {
         const videosConfig = { ...VIDEOS_CONFIG };
         videosConfig.speed = speed;
@@ -27,12 +27,13 @@ const main = async () => {
     const resetSpeed = common.throttleDebounced(async() => {
         const videosConfig = { ...VIDEOS_CONFIG };
         await common.setStorage({ videosConfig });
-    }, 200, 50);
+    }, 100, 50);
     const syncPlaybackRate = common.throttleDebounced(async (speed) => {
         const videos = common.getVideos(document);
         if (!videos?.length) {
+            await common.requestAction(ACTION.HIDE_PAGE_ACTION);
             return;
-        }
+        };
         const storage = await common.getStorage(["videosConfig"]);
         const videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
         speed = speed || videosConfig.speed;
@@ -50,10 +51,9 @@ const main = async () => {
 
     // Auto Sync
     common.syncStorage("sync", "videosConfig", syncPlaybackRate); 
-    window.setInterval(() => {
+    let runner = window.setInterval(() => {
         syncPlaybackRate();
     }, 750);
-
     // Events
     document.addEventListener("click", async (e) => {
         // Refresh/Update 
@@ -114,6 +114,6 @@ const main = async () => {
                 break;
         }
     });
-}
+};
 
 export { main };
