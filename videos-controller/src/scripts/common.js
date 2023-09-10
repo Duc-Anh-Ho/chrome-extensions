@@ -39,6 +39,7 @@ const debounceThottled = (callback, debounceDelay, throttleDelay) => {
         await callback(...args);
     }, throttleDelay), debounceDelay);
 }
+// VIDEOS CONTROLLER
 const isFullScreen = (doc) => !!(
     doc.fullscreenElement ||
     doc.webkitFullscreenElement ||
@@ -90,10 +91,10 @@ const setLastPlayedVideo = (doc) => {
     const videos = getVideos(doc);
     for (const video of videos) {
         video.addEventListener("play", () => {
-            video.setAttribute("data-last-played", "true");
+            video.setAttribute("last-video-played", "true");
             for (const otherVideo of getVideos(doc)) {
                 if (otherVideo !== video) {
-                    otherVideo.removeAttribute("data-last-played");
+                    otherVideo.removeAttribute("last-video-played");
                 }
             }
         });
@@ -101,12 +102,11 @@ const setLastPlayedVideo = (doc) => {
 };
 const getLastPlayedVideo = (doc) => {
     return (
-        doc.querySelector("video[data-last-played]") 
+        doc.querySelector("video[last-video-played]") 
         || doc.querySelector("video")
         || ((doc.activeElement instanceof HTMLVideoElement) ? doc.activeElement : null)
     )
 };
-
 // CHROME API
 const getCurrentTabs = async () => {
     const queryOptions = { active: true, currentWindow: true };

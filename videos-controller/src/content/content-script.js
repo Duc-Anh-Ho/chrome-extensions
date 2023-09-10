@@ -7,6 +7,7 @@ console.info("Content script loaded!");
 const main = async () => {
     // VIDEO controllers
     let activeVideo = null;
+    let parentActiveVideo = null;
     const increaseSpeed = common.throttleDebounced(async () => {
         const storage = await common.getStorage(["videosConfig"]);
         const videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
@@ -23,7 +24,7 @@ const main = async () => {
         const videosConfig = { ...VIDEOS_CONFIG };
         videosConfig.speed = speed;
         await common.setStorage({ videosConfig });
-    });
+    }, 100, 50);
     const resetSpeed = common.throttleDebounced(async() => {
         const videosConfig = { ...VIDEOS_CONFIG };
         await common.setStorage({ videosConfig });
@@ -40,15 +41,58 @@ const main = async () => {
         for (const video of videos) {
             if (common.isPlaying(video)) {
                 activeVideo = video;
+                parentActiveVideo = activeVideo.parentNode;
                 activeVideo.playbackRate = (speed / 100).toFixed(2);
                 await common.requestAction(ACTION.SHOW_PAGE_ACTION);
                 return;
             }
         }
         activeVideo = common.getLastPlayedVideo(document)
+        parentActiveVideo = activeVideo.parentNode;
         await common.requestAction(ACTION.HIDE_PAGE_ACTION);
     }, 650, 300);
-
+    const setDisplayInVideo = async (parentVideo) => {
+        await removeDisplayInVideo();
+        clearTimeout(timerRemoveDisplay);
+        if (!parentVideo) return;
+        const resetTimer = true;
+        const displayInVideoCont = document.createElement("div");
+        const displaySpeedSpan = document.createElement("span");
+        const storage = await common.getStorage(["videosConfig"]);
+        const videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
+        const displaySpeed = (videosConfig.speed / 100).toFixed(2);
+        displayInVideoCont.id = "display-in-video-container";
+        displayInVideoCont.style.position = "absolute";
+        displayInVideoCont.style.zIndex = "1"
+        displayInVideoCont.style.top = "10px";
+        displayInVideoCont.style.left = "10px";
+        displayInVideoCont.style.height = "fit-content";
+        displayInVideoCont.style.width = "fit-content";
+        displayInVideoCont.style.padding = "5px";
+        displayInVideoCont.style.opacity = "0.8"; // TODO: Change to dynamic input
+        displayInVideoCont.style.backgroundColor = "Black";
+        displayInVideoCont.style.borderRadius = "8px";
+        displayInVideoCont.style.color = "FloralWhite";
+        displayInVideoCont.style.fontSize = "12px";
+        displayInVideoCont.style.fontWeight = "bold";
+        displayInVideoCont.draggable = true;
+        displayInVideoCont.style.cursor = "move";
+        displayInVideoCont.appendChild(displaySpeedSpan);
+        displaySpeedSpan.id = "display-speed-span";
+        displaySpeedSpan.textContent = `${displaySpeed}`;
+        // displayInVideoCont.addEventListener("mouseenter",showMore);
+        // displayInVideoCont.addEventListener("mouseout",showLess);
+        parentVideo.insertAdjacentElement("afterbegin", displayInVideoCont);
+        let timerRemoveDisplay = setTimeout((() => {
+            removeDisplayInVideo();
+        }, 1000));
+    };
+    const removeDisplayInVideo = async () => {
+        const displayInVideo = document.getElementById("display-in-video-container");
+        if (displayInVideo) {
+            console.log("here: line #94"); // TODO: ⬅️ DELETE 
+            displayInVideo.remove();}
+    };
     // Auto Sync
     common.syncStorage("sync", "videosConfig", syncPlaybackRate); 
     let runner = window.setInterval(() => {
@@ -63,19 +107,26 @@ const main = async () => {
     addEventListener("scroll", (e) => {
         syncPlaybackRate();
     });
+
     document.addEventListener("keydown", async (e) => {
         // Refresh/Update variables
         common.setLastPlayedVideo(document);
         syncPlaybackRate();
         switch (e.code) {
             case "Period":
-                if (e.shiftKey) increaseSpeed();
+                if (e.shiftKey) {
+                    increaseSpeed();
+                    await setDisplayInVideo(parentActiveVideo);
+                }
                 break;
             case "Comma":
-                if (e.shiftKey) decreaseSpeed();
+                if (e.shiftKey) {
+                    decreaseSpeed();
+                    await setDisplayInVideo(parentActiveVideo);
+                }
                 break;
             case "Slash":
-                if (e.shiftKey) await common.requestAction(ACTION.CREATE_NOTIFICATION);
+                // if (e.shiftKey) await common.requestAction(ACTION.CREATE_NOTIFICATION);
                 break;
             case "KeyP":
             case "KeyK":
@@ -95,7 +146,7 @@ const main = async () => {
                 if (e.shiftKey) resetSpeed();
                 break;
             case "Digit1":
-                await common.requestAction(ACTION.CLEAR_NOTIFICATIONS);
+                if (e.altKey) await setDisplayInVideo(parentActiveVideo);
                 if (e.shiftKey) setSpeed(100);
                 break;
             case "Digit2":
