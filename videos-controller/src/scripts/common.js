@@ -87,6 +87,9 @@ const toggleFullscreen = async (doc, elem) => {
 const getVideos = (doc) => {
     return doc.querySelectorAll("video"); // $$("video")
 };
+const getInputs = (doc) => {
+    return doc.querySelectorAll("input"); // $$("input")
+};
 const setLastPlayedVideo = (doc) => {
     const videos = getVideos(doc);
     for (const video of videos) {
@@ -123,7 +126,12 @@ const dissableAction = async (tabId) => {
     await chrome.action.disable(tabId);
 };
 const requestAction = async (action) => {
-    await chrome.runtime.sendMessage({ action });
+    try {
+        await chrome.runtime.sendMessage({ action });
+    } catch (err) {
+        // Upgrade extension will lost message, so reload required.
+        window.location.reload();
+    }
 };
 const setBadgeText = async (text, color) => {
     await chrome.action.setBadgeBackgroundColor({ color })
@@ -233,6 +241,7 @@ export {
     , clearNotifications
     , enableAction
     , dissableAction
+    , getInputs
 };
 
 export default {
@@ -264,4 +273,5 @@ export default {
     , clearNotifications
     , enableAction
     , dissableAction
+    , getInputs 
 };
