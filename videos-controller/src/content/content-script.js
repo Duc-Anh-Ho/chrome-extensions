@@ -12,9 +12,9 @@ const main = async () => {
     const setSpeed = common.throttleDebounced(async (speed) => {
         const storage = await common.getStorage(["videosConfig"]);
         const videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
-        if (speed === "increase") {
+        if (speed === "+") {
             videosConfig.speed = Math.min(videosConfig.speed + videosConfig.step, videosConfig.MAX_SPEED);
-        } else if (speed === "decrease") {
+        } else if (speed === "-") {
             videosConfig.speed = Math.max(videosConfig.speed - videosConfig.step, 0);
         } else {
             videosConfig.speed = speed;
@@ -22,6 +22,12 @@ const main = async () => {
         await common.setStorage({ videosConfig });
         await setDisplayInVideo(parentActiveVideo, videosConfig.speed);
     }, 100, 50);
+    const setPosition = common.throttleDebounced(async (position) => { 
+        const storage = await common.getStorage(["videosConfig"]);
+        const videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
+        videosConfig.position = position;
+        await common.setStorage({ videosConfig });
+    }, 100, 100);
     const syncPlaybackRate = common.throttleDebounced(async (speed) => {
         const videos = common.getVideos(document);
         if (!videos?.length) {
@@ -45,43 +51,78 @@ const main = async () => {
         await common.requestAction(ACTION.HIDE_PAGE_ACTION);
     }, 650, 300);
     const setDisplayInVideo = async (parentVideo, speed) => {
-        removeDisplayInVideo();
+        removeCoverInVideo();
         if (!parentVideo) return;
-        const displayInVideoCont = document.createElement("div");
-        const displaySpeedSpan = document.createElement("span");;
+        const coverVideoCont = document.createElement("div");
+        const inVideoCont = document.createElement("div");
+        const speedSpan = document.createElement("span");
         const displaySpeed = (speed / 100).toFixed(2);
-        displayInVideoCont.id = "display-in-video-container";
-        displayInVideoCont.style.position = "absolute";
-        displayInVideoCont.style.zIndex = "1"
-        displayInVideoCont.style.top = "5em";
-        displayInVideoCont.style.left = "0em";
-        displayInVideoCont.style.height = "fit-content";
-        displayInVideoCont.style.width = "fit-content";
-        displayInVideoCont.style.padding = "0.2em";
-        displayInVideoCont.style.opacity = "0.8"; // TODO: Change to dynamic input
-        displayInVideoCont.style.backgroundColor = COLOR.GREEN;
-        displayInVideoCont.style.borderRadius = "8px";
-        displayInVideoCont.style.color = "black";
-        displayInVideoCont.style.fontSize = "1.3em";
-        displayInVideoCont.style.fontWeight = "bold";
-        displayInVideoCont.draggable = true;
-        displayInVideoCont.style.cursor = "move";
-        displayInVideoCont.appendChild(displaySpeedSpan);
-        displaySpeedSpan.id = "display-speed-span";
-        displaySpeedSpan.textContent = `${displaySpeed}`;
-        // displayInVideoCont.addEventListener("mouseenter",showMore);
-        // displayInVideoCont.addEventListener("mouseout",showLess);
-        parentVideo.insertAdjacentElement("afterbegin", displayInVideoCont);
-        setDisplayTimer(10000);
+        coverVideoCont.id = "cover-video-container";
+        coverVideoCont.style.position = "absolute";
+        coverVideoCont.style.zIndex = "1";
+        // console.log("activeVideo.style.top:", activeVideo.style.top);
+        // coverVideoCont.style.top = activeVideo.style.top || "2em";
+        // coverVideoCont.style.left = activeVideo.style.left || "1.25em";
+        // coverVideoCont.style.height = activeVideo.style.height || "100%";
+        // coverVideoCont.style.width = activeVideo.style.width || "100%";
+        coverVideoCont.appendChild(inVideoCont);
+        inVideoCont.style.position = "relative";
+        inVideoCont.style.top = "2em";
+        inVideoCont.style.left = "1.25em";
+        inVideoCont.style.height = "fit-content";
+        inVideoCont.style.width = "fit-content";
+        inVideoCont.style.padding = "0.2em";
+        inVideoCont.style.opacity = "0.8"; // TODO: Change to dynamic input
+        inVideoCont.style.backgroundColor = COLOR.GREEN;
+        inVideoCont.style.borderRadius = "1em";
+        inVideoCont.style.color = COLOR.BLACK;
+        inVideoCont.style.fontSize = "1.3em";
+        inVideoCont.style.fontWeight = "bold";
+        inVideoCont.style.cursor = "move";
+        inVideoCont.draggable = true;
+        inVideoCont.appendChild(speedSpan);
+        speedSpan.id = "speed-span";
+        speedSpan.textContent = `${displaySpeed}`;
+        inVideoCont.addEventListener("dragstart", (e) => {
+            inVideoCont.style.opacity = "0.3";
+            e.dataTransfer.setData("text/plain", "coverVideo");
+        });
+        inVideoCont.addEventListener("drag", (e) => {
+            console.log("here: line #83"); // TODO: ⬅️ DELETE 
+            e.preventDefault();
+        });
+        inVideoCont.addEventListener("dragover", (e) => {
+            console.log("here: line #82"); // TODO: ⬅️ DELETE 
+            e.preventDefault();
+        });
+        inVideoCont.addEventListener("dragend", (e) => {
+            inVideoCont.style.opacity = "0.8";
+            console.log("e.dataTransfer.getData('text/plain') :", e.dataTransfer.getData("text/plain") );
+            e.preventDefault();
+            console.log("e.clientX:", e.clientX);
+            console.log("e.clientY:", e.clientY);
+            if (e.dataTransfer.getData("text/plain") === "coverVideo") {
+                setPosition({
+                    top: e.clientX,
+                    left: e.clientY
+                })
+                inVideoCont.style.left = `${e.clientX}em`;
+                inVideoCont.style.top = `${e.clientY}em`;
+            }
+        });
+        // inVideoCont.addEventListener("mouseenter",showMore);
+        // inVideoCont.addEventListener("mouseout",showLess);
+        parentVideo.insertAdjacentElement("afterbegin", coverVideoCont);
+        // setDisplayTimer(10000);
     };
-    const removeDisplayInVideo = () => {
-        const displayInVideo = document.getElementById("display-in-video-container");
-        if (displayInVideo) displayInVideo.remove();
+    const removeCoverInVideo = () => {
+        const coverVideoCont = document.getElementById("cover-video-container");
+        if (coverVideoCont) coverVideoCont.remove();
     };
     const setDisplayTimer = (delay) => {
         if(displayTimer) clearTimeout(displayTimer);
         displayTimer = setTimeout(() => {
-            removeDisplayInVideo();
+            removeCoverInVideo();
         }, delay);
     }
     // Auto Sync
@@ -107,12 +148,12 @@ const main = async () => {
         switch (e.code) {
             case "Period":
                 if (e.shiftKey) {
-                    setSpeed("increase");
+                    setSpeed("+");
                 }
                 break;
             case "Comma":
                 if (e.shiftKey) {
-                    setSpeed("decrease");
+                    setSpeed("-");
                 }
                 break;
             case "Slash":

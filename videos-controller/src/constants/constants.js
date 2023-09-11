@@ -4,12 +4,17 @@ const step = 25;
 const seek = 10;
 const MIN_SPEED = 0;
 const MAX_SPEED = 500;
+const position = {
+    top: "5em",
+    left: "0.5em"
+}
 const VIDEOS_CONFIG = {
     speed
     , step
     , seek
     , MAX_SPEED
     , MIN_SPEED
+    , position
 }
 
 const NUM = /^\d+(\.\d{0,2})?$/; // 0.00
@@ -22,10 +27,12 @@ const REGEX = {
 const GREEN = "#00ff00";
 const RED = "#dc3545";
 const GRAY = "#f1f1f1";
+const BLACK = "#000000";
 const COLOR = {
     GREEN
     , RED
     , GRAY
+    , BLACK
 }
 
 const CREATE_NOTIFICATION = "create-notification";
