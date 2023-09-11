@@ -53,21 +53,23 @@ const main = async () => {
     const setDisplayInVideo = async (parentVideo, speed) => {
         removeCoverInVideo();
         if (!parentVideo) return;
-        const coverVideoCont = document.createElement("div");
+        const overlayVideoCont = document.createElement("div");
         const inVideoCont = document.createElement("div");
         const speedSpan = document.createElement("span");
         const displaySpeed = (speed / 100).toFixed(2);
-        coverVideoCont.id = "cover-video-container";
-        coverVideoCont.style.position = "absolute";
-        coverVideoCont.style.zIndex = "1";
-        // console.log("activeVideo.style.top:", activeVideo.style.top);
-        // coverVideoCont.style.top = activeVideo.style.top || "2em";
-        // coverVideoCont.style.left = activeVideo.style.left || "1.25em";
-        // coverVideoCont.style.height = activeVideo.style.height || "100%";
-        // coverVideoCont.style.width = activeVideo.style.width || "100%";
-        coverVideoCont.appendChild(inVideoCont);
-        inVideoCont.style.position = "relative";
-        inVideoCont.style.top = "2em";
+        const activeVideoRect = activeVideo.getBoundingClientRect();
+        overlayVideoCont.id = "overlay-video-container";
+        overlayVideoCont.style.position = "absolute";
+        overlayVideoCont.style.zIndex = "1";
+        overlayVideoCont.style.top = `${activeVideo.offsetTop}px`;
+        overlayVideoCont.style.left = `${activeVideo.offsetLeft}px`;
+        overlayVideoCont.style.bottom = `${activeVideo.offsetBottom}px`;
+        overlayVideoCont.style.right = `${activeVideo.offsetBight}px`;
+        // overlayVideoCont.style.height = `${activeVideo.offsetHeight}px`;
+        // overlayVideoCont.style.width = `${activeVideo.offsetWidth}px`;
+        overlayVideoCont.appendChild(inVideoCont);
+        inVideoCont.style.position = "absolute";
+        inVideoCont.style.top = "3em";
         inVideoCont.style.left = "1.25em";
         inVideoCont.style.height = "fit-content";
         inVideoCont.style.width = "fit-content";
@@ -83,41 +85,39 @@ const main = async () => {
         inVideoCont.appendChild(speedSpan);
         speedSpan.id = "speed-span";
         speedSpan.textContent = `${displaySpeed}`;
+        // overlayVideoCont.addEventListener("dragover", (e) => {
+        //     e.preventDefault();
+        // });
         inVideoCont.addEventListener("dragstart", (e) => {
             inVideoCont.style.opacity = "0.3";
-            e.dataTransfer.setData("text/plain", "coverVideo");
+            e.dataTransfer.setData("text/plain", e.target.id);
         });
-        inVideoCont.addEventListener("drag", (e) => {
-            console.log("here: line #83"); // TODO: ⬅️ DELETE 
-            e.preventDefault();
-        });
-        inVideoCont.addEventListener("dragover", (e) => {
-            console.log("here: line #82"); // TODO: ⬅️ DELETE 
-            e.preventDefault();
-        });
+        // inVideoCont.addEventListener("drop", (e) => {
+        //     e.preventDefault();
+        // });
         inVideoCont.addEventListener("dragend", (e) => {
             inVideoCont.style.opacity = "0.8";
             console.log("e.dataTransfer.getData('text/plain') :", e.dataTransfer.getData("text/plain") );
             e.preventDefault();
-            console.log("e.clientX:", e.clientX);
-            console.log("e.clientY:", e.clientY);
-            if (e.dataTransfer.getData("text/plain") === "coverVideo") {
+            console.log("e.clientX:", e.clientY - activeVideoRect.top);
+            console.log("e.clientY:", e.clientX - activeVideoRect.left);
+            if (e.dataTransfer.getData("text/plain") === e.target.id) {
                 setPosition({
-                    top: e.clientX,
-                    left: e.clientY
+                    top: e.clientY - activeVideoRect.top,
+                    left: e.clientX - activeVideoRect.left
                 })
-                inVideoCont.style.left = `${e.clientX}em`;
-                inVideoCont.style.top = `${e.clientY}em`;
+                inVideoCont.style.top = `${e.clientY - activeVideoRect.top}px`;
+                inVideoCont.style.left = `${e.clientX- activeVideoRect.left}px`;
             }
         });
         // inVideoCont.addEventListener("mouseenter",showMore);
         // inVideoCont.addEventListener("mouseout",showLess);
-        parentVideo.insertAdjacentElement("afterbegin", coverVideoCont);
+        parentVideo.insertAdjacentElement("afterbegin", overlayVideoCont);
         // setDisplayTimer(10000);
     };
     const removeCoverInVideo = () => {
-        const coverVideoCont = document.getElementById("cover-video-container");
-        if (coverVideoCont) coverVideoCont.remove();
+        const overlayVideoCont = document.getElementById("overlay-video-container");
+        if (overlayVideoCont) overlayVideoCont.remove();
     };
     const setDisplayTimer = (delay) => {
         if(displayTimer) clearTimeout(displayTimer);
@@ -147,29 +147,28 @@ const main = async () => {
         if (isInputting(e)) return; // Prevents shortcut While Inputing
         switch (e.code) {
             case "Period":
-                if (e.shiftKey) {
-                    setSpeed("+");
-                }
+                if (e.shiftKey) setSpeed("+");
                 break;
             case "Comma":
-                if (e.shiftKey) {
-                    setSpeed("-");
-                }
+                if (e.shiftKey) setSpeed("-");
                 break;
             case "Slash":
                 if (e.shiftKey) await common.requestAction(ACTION.CREATE_NOTIFICATION);
                 break;
             case "KeyP":
             case "KeyK":
+                if (e.ctrlKey) break;
                 if (!activeVideo) break;
                 activeVideo.paused ? activeVideo.play() : activeVideo.pause();
                 break;
             case "KeyM":
+                if (e.ctrlKey) break;
                 if (!activeVideo) break;
                 activeVideo.muted = !activeVideo.muted;
                 break;
             case "Enter": if (!e.altKey) break;
             case "KeyF":
+                if (e.ctrlKey) break;
                 if (!activeVideo) break;
                 await common.toggleFullscreen(document, activeVideo); 
                 break;
@@ -177,7 +176,6 @@ const main = async () => {
                 if (e.shiftKey) setSpeed(0);
                 break;
             case "Digit1":
-                if (e.altKey) await setDisplayInVideo(parentActiveVideo);
                 if (e.shiftKey) setSpeed(100);
                 break;
             case "Digit2":
