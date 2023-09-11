@@ -1,5 +1,5 @@
 "use strict";
-import common from "../scripts/common.js";
+import common, { isInputting } from "../scripts/common.js";
 import { VIDEOS_CONFIG, ACTION, COLOR } from "../constants/constants.js";
 
 console.info("Content script loaded!");
@@ -8,7 +8,6 @@ const main = async () => {
     // VIDEO controllers
     let activeVideo = null;
     let parentActiveVideo = null;
-    let isFocus = false;
     let displayTimer = null;
     const setSpeed = common.throttleDebounced(async (speed) => {
         const storage = await common.getStorage(["videosConfig"]);
@@ -23,15 +22,8 @@ const main = async () => {
         await common.setStorage({ videosConfig });
         await setDisplayInVideo(parentActiveVideo, videosConfig.speed);
     }, 100, 50);
-    const syncRuning = common.throttleDebounced(async (speed) => {
+    const syncPlaybackRate = common.throttleDebounced(async (speed) => {
         const videos = common.getVideos(document);
-        const inputs = common.getInputs(document);
-        if (inputs?.length) {
-            for (const input of inputs) {
-                input.addEventListener("focus", () => (isFocus = true));
-                input.addEventListener("blur", () => (isFocus = false));
-            }
-        };
         if (!videos?.length) {
             await common.requestAction(ACTION.HIDE_PAGE_ACTION);
             return;
@@ -93,25 +85,25 @@ const main = async () => {
         }, delay);
     }
     // Auto Sync
-    common.syncStorage("sync", "videosConfig", syncRuning); 
+    common.syncStorage("sync", "videosConfig", syncPlaybackRate); 
     let runner = window.setInterval(() => {
-        syncRuning();
+        syncPlaybackRate();
     }, 750);
     // Events
     document.addEventListener("click", async (e) => {
         // Refresh/Update 
         common.setLastPlayedVideo(document); 
-        syncRuning();
+        syncPlaybackRate();
     });
     addEventListener("scroll", (e) => {
-        syncRuning();
+        syncPlaybackRate();
     });
 
     document.addEventListener("keydown", async (e) => {
         // Refresh/Update variables
         common.setLastPlayedVideo(document);
-        syncRuning();
-        if (isFocus) return;
+        syncPlaybackRate();
+        if (isInputting(e)) return; // Prevents shortcut While Inputing
         switch (e.code) {
             case "Period":
                 if (e.shiftKey) {

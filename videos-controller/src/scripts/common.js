@@ -87,8 +87,9 @@ const toggleFullscreen = async (doc, elem) => {
 const getVideos = (doc) => {
     return doc.querySelectorAll("video"); // $$("video")
 };
-const getInputs = (doc) => {
-    return doc.querySelectorAll("input"); // $$("input")
+const isInputting = (event) => {
+    const tagName = event.target.tagName.toLowerCase();
+    return tagName === "input" || tagName === "textarea" || event.target.isContentEditable;
 };
 const setLastPlayedVideo = (doc) => {
     const videos = getVideos(doc);
@@ -241,7 +242,7 @@ export {
     , clearNotifications
     , enableAction
     , dissableAction
-    , getInputs
+    , isInputting
 };
 
 export default {
@@ -273,5 +274,5 @@ export default {
     , clearNotifications
     , enableAction
     , dissableAction
-    , getInputs 
+    , isInputting 
 };
