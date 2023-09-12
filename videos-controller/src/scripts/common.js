@@ -55,7 +55,9 @@ const isPlaying = (video) => !!(
 const enableFullScreen = async (doc, elem) => {
     // Chrome, Safari, and Opera
     if (elem.webkitEnterFullscreen && doc.webkitFullscreenEnabled) {
-        await elem.webkitEnterFullscreen(); 
+        await elem.webkitEnterFullscreen(Element.ALLOW_KEYBOARD_INPUT); 
+    } else if(elem.webkitRequestFullscreen && doc.webkitFullscreenEnabled) {
+        await elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
     // Firefox
     } else if (elem.mozRequestFullScreen && doc.mozFullScreenEnabled) {
         await elem.mozRequestFullScreen();
@@ -80,8 +82,10 @@ const disableFullscreen = async (doc, elem) => {
 const toggleFullscreen = async (doc, elem) => {
     if (isFullScreen(doc)) {
         await disableFullscreen(doc);
+        return false;
     } else {
         await enableFullScreen(doc, elem);
+        return true;
     }
 };
 const getVideos = (doc) => {
@@ -225,8 +229,8 @@ export {
     , toggleFullscreen
     , isPlaying
     , requestAction
-    , setLastPlayedVideo
     , getVideos
+    , setLastPlayedVideo
     , getLastPlayedVideo
 
     , setStorage
@@ -258,8 +262,8 @@ export default {
     , isPlaying
     , requestAction
     , getVideos
-    , getLastPlayedVideo
     , setLastPlayedVideo
+    , getLastPlayedVideo
 
     , setStorage
     , setBadgeText

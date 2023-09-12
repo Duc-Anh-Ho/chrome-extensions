@@ -28,6 +28,35 @@ const main = async () => {
         videosConfig.position = position;
         await common.setStorage({ videosConfig });
     }, 100, 100);
+    const setDragAndDrop = (element, parentElement) => {
+        parentElement.addEventListener("dragover", (e) => {
+            e.preventDefault();
+        });
+        pren
+        parentElement.addEventListener("dragleave", (e) => {
+            console.log("here: line #36"); // TODO: ⬅️ DELETE 
+        });
+        element.addEventListener("dragstart", (e) => {
+            element.style.opacity = "0.2";
+            e.dataTransfer.setData("text/plain", e.target.id);
+        });
+        element.addEventListener("drag", (e) => {
+            element.style.opacity = "0.2";
+        });
+        element.addEventListener("dragend", (e) => {
+            element.style.opacity = "0.8";
+            if (e.dataTransfer.getData("text/plain") === e.target.id) {
+                const parentRect = parentElement.getBoundingClientRect();
+                const rect = element.getBoundingClientRect();
+                const position = {
+                    top: e.clientY - (rect.width / 2) - parentRect.top ,
+                    left: e.clientX - (rect.height / 2) -  parentRect.left,
+                };
+                element.style.top = `${position.top}px`;
+                element.style.left = `${position.left}px`;
+            }
+        });
+    };
     const syncPlaybackRate = common.throttleDebounced(async (speed) => {
         const videos = common.getVideos(document);
         if (!videos?.length) {
@@ -57,18 +86,17 @@ const main = async () => {
         const inVideoCont = document.createElement("div");
         const speedSpan = document.createElement("span");
         const displaySpeed = (speed / 100).toFixed(2);
-        const activeVideoRect = activeVideo.getBoundingClientRect();
         overlayVideoCont.id = "overlay-video-container";
         overlayVideoCont.style.position = "absolute";
         overlayVideoCont.style.zIndex = "1";
         overlayVideoCont.style.top = `${activeVideo.offsetTop}px`;
         overlayVideoCont.style.left = `${activeVideo.offsetLeft}px`;
-        overlayVideoCont.style.bottom = `${activeVideo.offsetBottom}px`;
-        overlayVideoCont.style.right = `${activeVideo.offsetBight}px`;
-        // overlayVideoCont.style.height = `${activeVideo.offsetHeight}px`;
-        // overlayVideoCont.style.width = `${activeVideo.offsetWidth}px`;
+        overlayVideoCont.style.height = `${activeVideo.offsetHeight}px`;
+        overlayVideoCont.style.width = `${activeVideo.offsetWidth}px`;
         overlayVideoCont.appendChild(inVideoCont);
         inVideoCont.style.position = "absolute";
+        // inVideoCont.style.top = "3em";
+        // inVideoCont.style.left = "1.25em";
         inVideoCont.style.top = "3em";
         inVideoCont.style.left = "1.25em";
         inVideoCont.style.height = "fit-content";
@@ -76,7 +104,7 @@ const main = async () => {
         inVideoCont.style.padding = "0.2em";
         inVideoCont.style.opacity = "0.8"; // TODO: Change to dynamic input
         inVideoCont.style.backgroundColor = COLOR.GREEN;
-        inVideoCont.style.borderRadius = "1em";
+        inVideoCont.style.borderRadius = "0.8em";
         inVideoCont.style.color = COLOR.BLACK;
         inVideoCont.style.fontSize = "1.3em";
         inVideoCont.style.fontWeight = "bold";
@@ -84,34 +112,12 @@ const main = async () => {
         inVideoCont.draggable = true;
         inVideoCont.appendChild(speedSpan);
         speedSpan.id = "speed-span";
-        speedSpan.textContent = `${displaySpeed}`;
-        // overlayVideoCont.addEventListener("dragover", (e) => {
-        //     e.preventDefault();
-        // });
-        inVideoCont.addEventListener("dragstart", (e) => {
-            inVideoCont.style.opacity = "0.3";
-            e.dataTransfer.setData("text/plain", e.target.id);
-        });
-        // inVideoCont.addEventListener("drop", (e) => {
-        //     e.preventDefault();
-        // });
-        inVideoCont.addEventListener("dragend", (e) => {
-            inVideoCont.style.opacity = "0.8";
-            console.log("e.dataTransfer.getData('text/plain') :", e.dataTransfer.getData("text/plain") );
-            e.preventDefault();
-            console.log("e.clientX:", e.clientY - activeVideoRect.top);
-            console.log("e.clientY:", e.clientX - activeVideoRect.left);
-            if (e.dataTransfer.getData("text/plain") === e.target.id) {
-                setPosition({
-                    top: e.clientY - activeVideoRect.top,
-                    left: e.clientX - activeVideoRect.left
-                })
-                inVideoCont.style.top = `${e.clientY - activeVideoRect.top}px`;
-                inVideoCont.style.left = `${e.clientX- activeVideoRect.left}px`;
-            }
-        });
+        speedSpan.textContent = `${displaySpeed}`
+        setDragAndDrop(inVideoCont, overlayVideoCont);
+        
         // inVideoCont.addEventListener("mouseenter",showMore);
         // inVideoCont.addEventListener("mouseout",showLess);
+
         parentVideo.insertAdjacentElement("afterbegin", overlayVideoCont);
         // setDisplayTimer(10000);
     };
