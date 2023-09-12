@@ -39,6 +39,79 @@ const debounceThottled = (callback, debounceDelay, throttleDelay) => {
         await callback(...args);
     }, throttleDelay), debounceDelay);
 }
+// https://javascript.info/mouse-drag-and-drop
+const createDragAndDrop = (parentElement, ...childElements) => {
+    // const shadowElement = targetElement.cloneNode(true);
+    // targetElement.style.display = "none";
+    // parentElement.appendChild(shadowElement);
+    const offset = {};
+    let opacity;
+
+    // NOTE: Muse use regular function
+    const startMove = (event, childElement) => {
+        console.log("event:", event);
+        console.log("childElement:", childElement);
+        const targetRect = childElement.getBoundingClientRect();
+        childElement.style.top = event.clientX - (targetRect.width / 2);
+        childElement.style.left = event.clientY - (targetRect.height / 2);
+    }
+    for (const childElement of childElements) {
+        opacity = childElement.style.opacity;
+        childElement.draggable = true;
+        childElement.style.position = "absolute";
+        childElement.style.userSelect = "none";
+        childElement.style.cursor = "move";
+        childElement.addEventListener("selectstart", (event) => {
+            event.preventDefault(); // Prevent text selection
+        });
+        childElement.addEventListener("dragstart", (event) => {
+            const dragRect = event.target.getBoundingClientRect();
+            const test = event;
+            event.target.style.opacity = "0.3";
+            event.dataTransfer.clearData();
+            event.dataTransfer.setData("text/plain", event.target.id);
+            offset.top = event.clientX - dragRect.x;
+            offset.left = event.clientY - dragRect.y;
+            document.addEventListener("mousemove", startMove.bind(null, event, childElement));
+        });
+        childElement.addEventListener("drag", (event) => {});
+        // TODO: Optional drop outside also.
+        childElement.addEventListener("dragend", (event) => {
+            return false
+            const dropElement = event.target;
+            const parentRect = parentElement.getBoundingClientRect();
+            const position = {
+                top: Math.round(event.clientY - offset.top - parentRect.top),
+                left: Math.round(event.clientX - offset.left - parentRect.left)
+            };
+                dropElement.style.opacity = opacity;
+                dropElement.style.top = `${position.top}px`;
+                dropElement.style.left = `${position.left}px`;
+        });
+        parentElement.appendChild(childElement);
+    }
+    parentElement.style.position = "absolute";
+    parentElement.style.zIndex = "9999";
+    parentElement.addEventListener("dragover", (event) => {
+        event.preventDefault(); // Can enable drag icon.
+    });
+    parentElement.addEventListener("dragleave", (event) => {});
+    parentElement.addEventListener("dragenter", (event) => {});
+    // TODO: Optional drop inside only.
+    parentElement.addEventListener("drop", (event) => {
+        const dropDataId = event.dataTransfer.getData("text/plain");
+        const dropElement = document.getElementById(dropDataId);
+        const parentRect = event.target.getBoundingClientRect();
+        // const dropRect = dropElement.getBoundingClientRect();
+        const position = {
+            top: Math.round(event.clientY - offset.top - parentRect.top),
+            left: Math.round(event.clientX - offset.left - parentRect.left)
+        };
+        dropElement.style.opacity = opacity;
+        dropElement.style.top = `${position.top}px`;
+        dropElement.style.left = `${position.left}px`;
+    });
+};
 // VIDEOS CONTROLLER
 const isFullScreen = (doc) => !!(
     doc.fullscreenElement ||
@@ -223,16 +296,19 @@ export {
     , throttle
     , debounceThottled
     , throttleDebounced
+    , createDragAndDrop
+
     , isFullScreen
     , enableFullScreen
     , disableFullscreen
     , toggleFullscreen
+
     , isPlaying
-    , requestAction
     , getVideos
     , setLastPlayedVideo
     , getLastPlayedVideo
 
+    , requestAction
     , setStorage
     , setBadgeText
     , setIcon
@@ -255,16 +331,19 @@ export default {
     , throttle
     , debounceThottled
     , throttleDebounced
+    , createDragAndDrop
+
     , isFullScreen
     , enableFullScreen
     , disableFullscreen
     , toggleFullscreen
+
     , isPlaying
-    , requestAction
     , getVideos
     , setLastPlayedVideo
     , getLastPlayedVideo
 
+    , requestAction
     , setStorage
     , setBadgeText
     , setIcon
