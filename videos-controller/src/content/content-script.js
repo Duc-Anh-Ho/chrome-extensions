@@ -28,33 +28,54 @@ const main = async () => {
         videosConfig.position = position;
         await common.setStorage({ videosConfig });
     }, 100, 100);
-    const setDragAndDrop = (element, parentElement) => {
-        parentElement.addEventListener("dragover", (e) => {
-            e.preventDefault();
+    const setDragAndDrop = (targetElement, parentElement) => {
+        // const shadowElement = targetElement.cloneNode(true);
+        // targetElement.style.display = "none";
+        // parentElement.appendChild(shadowElement);
+
+        parentElement.addEventListener("dragover", (event) => {
+            // console.log("dragover");
+            event.preventDefault(); // This can enable drag icon
         });
-        pren
-        parentElement.addEventListener("dragleave", (e) => {
-            console.log("here: line #36"); // TODO: ⬅️ DELETE 
+        parentElement.addEventListener("dragleave", (event) => {
+            // console.log("dragleave");
         });
-        element.addEventListener("dragstart", (e) => {
-            element.style.opacity = "0.2";
-            e.dataTransfer.setData("text/plain", e.target.id);
-        });
-        element.addEventListener("drag", (e) => {
-            element.style.opacity = "0.2";
-        });
-        element.addEventListener("dragend", (e) => {
-            element.style.opacity = "0.8";
-            if (e.dataTransfer.getData("text/plain") === e.target.id) {
-                const parentRect = parentElement.getBoundingClientRect();
-                const rect = element.getBoundingClientRect();
+        parentElement.addEventListener("drop", (event) => {
+            console.log("drop");
+            targetElement.style.opacity = "0.8";
+            const parentRect = parentElement.getBoundingClientRect();
+            const targetRect = targetElement.getBoundingClientRect();
+            if (event.dataTransfer.getData("text/plain") === "in-video-container") {
                 const position = {
-                    top: e.clientY - (rect.width / 2) - parentRect.top ,
-                    left: e.clientX - (rect.height / 2) -  parentRect.left,
-                };
-                element.style.top = `${position.top}px`;
-                element.style.left = `${position.left}px`;
+                    top: event.clientY - (targetRect.width / 2) - parentRect.top ,
+                    left: event.clientX - (targetRect.height / 2) -  parentRect.left,
+                }
+                targetElement.style.top = `${position.top}px`;
+                targetElement.style.left = `${position.left}px`;
             }
+        });
+
+        targetElement.addEventListener("dragstart", (event) => {
+            // console.log("dragstart");
+            targetElement.style.opacity = "0.2";
+            event.dataTransfer.clearData();
+            event.dataTransfer.setData("text/plain", "in-video-container");
+        });
+        // targetElement.addEventListener("drag", (event) => {
+        //     console.log(event.dataTransfer.getData("text/plain"));
+        //     // console.log("drag");
+        // });
+        targetElement.addEventListener("dragend", (event) => {
+            // console.log("dragend");
+            // targetElement.style.opacity = "0.8";
+            // const parentRect = parentElement.getBoundingClientRect();
+            // const targetRect = targetElement.getBoundingClientRect();
+            // const position = {
+            //     top: event.clientY - (targetRect.width / 2) - parentRect.top ,
+            //     left: event.clientX - (targetRect.height / 2) -  parentRect.left,
+            // };
+            // targetElement.style.top = `${position.top}px`;
+            // targetElement.style.left = `${position.left}px`;
         });
     };
     const syncPlaybackRate = common.throttleDebounced(async (speed) => {
@@ -93,10 +114,8 @@ const main = async () => {
         overlayVideoCont.style.left = `${activeVideo.offsetLeft}px`;
         overlayVideoCont.style.height = `${activeVideo.offsetHeight}px`;
         overlayVideoCont.style.width = `${activeVideo.offsetWidth}px`;
-        overlayVideoCont.appendChild(inVideoCont);
+        inVideoCont.id = "in-video-container";
         inVideoCont.style.position = "absolute";
-        // inVideoCont.style.top = "3em";
-        // inVideoCont.style.left = "1.25em";
         inVideoCont.style.top = "3em";
         inVideoCont.style.left = "1.25em";
         inVideoCont.style.height = "fit-content";
@@ -110,9 +129,10 @@ const main = async () => {
         inVideoCont.style.fontWeight = "bold";
         inVideoCont.style.cursor = "move";
         inVideoCont.draggable = true;
-        inVideoCont.appendChild(speedSpan);
+        overlayVideoCont.appendChild(inVideoCont);
         speedSpan.id = "speed-span";
         speedSpan.textContent = `${displaySpeed}`
+        inVideoCont.appendChild(speedSpan);
         setDragAndDrop(inVideoCont, overlayVideoCont);
         
         // inVideoCont.addEventListener("mouseenter",showMore);
@@ -137,64 +157,64 @@ const main = async () => {
         syncPlaybackRate();
     }, 750);
     // Events
-    document.addEventListener("click", async (e) => {
+    document.addEventListener("click", async (event) => {
         // Refresh/Update 
         common.setLastPlayedVideo(document); 
         syncPlaybackRate();
     });
-    addEventListener("scroll", (e) => {
+    addEventListener("scroll", (event) => {
         syncPlaybackRate();
     });
 
-    document.addEventListener("keydown", async (e) => {
+    document.addEventListener("keydown", async (event) => {
         // Refresh/Update variables
         common.setLastPlayedVideo(document);
         syncPlaybackRate();
-        if (isInputting(e)) return; // Prevents shortcut While Inputing
-        switch (e.code) {
+        if (isInputting(event)) return; // Prevents shortcut While Inputing
+        switch (event.code) {
             case "Period":
-                if (e.shiftKey) setSpeed("+");
+                if (event.shiftKey) setSpeed("+");
                 break;
             case "Comma":
-                if (e.shiftKey) setSpeed("-");
+                if (event.shiftKey) setSpeed("-");
                 break;
             case "Slash":
-                if (e.shiftKey) await common.requestAction(ACTION.CREATE_NOTIFICATION);
+                if (event.shiftKey) await common.requestAction(ACTION.CREATE_NOTIFICATION);
                 break;
             case "KeyP":
             case "KeyK":
-                if (e.ctrlKey) break;
+                if (event.ctrlKey) break;
                 if (!activeVideo) break;
                 activeVideo.paused ? activeVideo.play() : activeVideo.pause();
                 break;
             case "KeyM":
-                if (e.ctrlKey) break;
+                if (event.ctrlKey) break;
                 if (!activeVideo) break;
                 activeVideo.muted = !activeVideo.muted;
                 break;
-            case "Enter": if (!e.altKey) break;
+            case "Enter": if (!event.altKey) break;
             case "KeyF":
-                if (e.ctrlKey) break;
+                if (event.ctrlKey) break;
                 if (!activeVideo) break;
                 await common.toggleFullscreen(document, activeVideo); 
                 break;
             case "Digit0":
-                if (e.shiftKey) setSpeed(0);
+                if (event.shiftKey) setSpeed(0);
                 break;
             case "Digit1":
-                if (e.shiftKey) setSpeed(100);
+                if (event.shiftKey) setSpeed(100);
                 break;
             case "Digit2":
-                if (e.shiftKey) setSpeed(200);
+                if (event.shiftKey) setSpeed(200);
                 break;
             case "Digit3":
-                if (e.shiftKey) setSpeed(300);
+                if (event.shiftKey) setSpeed(300);
                 break;
             case "Digit4":
-                if (e.shiftKey) setSpeed(400);
+                if (event.shiftKey) setSpeed(400);
                 break;
             case "Digit5":
-                if (e.shiftKey) setSpeed(500);
+                if (event.shiftKey) setSpeed(500);
                 break;
             default:
                 break;
