@@ -28,55 +28,54 @@ const main = async () => {
         videosConfig.position = position;
         await common.setStorage({ videosConfig });
     }, 100, 100);
-    const setDragAndDrop = (targetElement, parentElement) => {
+    const setDragAndDrop = (parentElement, ...childElements) => {
         // const shadowElement = targetElement.cloneNode(true);
         // targetElement.style.display = "none";
         // parentElement.appendChild(shadowElement);
 
+        parentElement.style.position = "absolute";
         parentElement.addEventListener("dragover", (event) => {
-            // console.log("dragover");
             event.preventDefault(); // This can enable drag icon
         });
         parentElement.addEventListener("dragleave", (event) => {
-            // console.log("dragleave");
+            //
         });
         parentElement.addEventListener("drop", (event) => {
-            console.log("drop");
-            targetElement.style.opacity = "0.8";
-            const parentRect = parentElement.getBoundingClientRect();
-            const targetRect = targetElement.getBoundingClientRect();
-            if (event.dataTransfer.getData("text/plain") === "in-video-container") {
+            const dropDataId = event.dataTransfer.getData("text/plain");
+            const dropElement = document.getElementById(dropDataId);
+            const dropRect = dropElement.getBoundingClientRect();
+            const targetRect = event.target.getBoundingClientRect();
+            const position = {
+                top: event.clientY - (dropRect.width / 2) - targetRect.top ,
+                left: event.clientX - (dropRect.height / 2) -  targetRect.left,
+            }
+            dropElement.style.opacity = "1";
+            dropElement.style.top = `${position.top}px`;
+            dropElement.style.left = `${position.left}px`;
+        });
+
+        for (const childElement of childElements) {
+            childElement.style.position = "absolute";
+            childElement.addEventListener("dragstart", (event) => {
+                event.target.style.opacity = "0.3";
+                event.dataTransfer.clearData();
+                event.dataTransfer.setData("text/plain", event.target.id);
+            });
+            childElement.addEventListener("drag", (event) => {
+                //
+            });
+            childElement.addEventListener("dragend", (event) => {
+                event.target.style.opacity = "1";
+                const parentRect = parentElement.getBoundingClientRect();
+                const targetRect = event.target.getBoundingClientRect();
                 const position = {
                     top: event.clientY - (targetRect.width / 2) - parentRect.top ,
                     left: event.clientX - (targetRect.height / 2) -  parentRect.left,
-                }
-                targetElement.style.top = `${position.top}px`;
-                targetElement.style.left = `${position.left}px`;
-            }
-        });
-
-        targetElement.addEventListener("dragstart", (event) => {
-            // console.log("dragstart");
-            targetElement.style.opacity = "0.2";
-            event.dataTransfer.clearData();
-            event.dataTransfer.setData("text/plain", "in-video-container");
-        });
-        // targetElement.addEventListener("drag", (event) => {
-        //     console.log(event.dataTransfer.getData("text/plain"));
-        //     // console.log("drag");
-        // });
-        targetElement.addEventListener("dragend", (event) => {
-            // console.log("dragend");
-            // targetElement.style.opacity = "0.8";
-            // const parentRect = parentElement.getBoundingClientRect();
-            // const targetRect = targetElement.getBoundingClientRect();
-            // const position = {
-            //     top: event.clientY - (targetRect.width / 2) - parentRect.top ,
-            //     left: event.clientX - (targetRect.height / 2) -  parentRect.left,
-            // };
-            // targetElement.style.top = `${position.top}px`;
-            // targetElement.style.left = `${position.left}px`;
-        });
+                };
+                event.target.style.top = `${position.top}px`;
+                event.target.style.left = `${position.left}px`;
+            });
+        }
     };
     const syncPlaybackRate = common.throttleDebounced(async (speed) => {
         const videos = common.getVideos(document);
@@ -133,7 +132,7 @@ const main = async () => {
         speedSpan.id = "speed-span";
         speedSpan.textContent = `${displaySpeed}`
         inVideoCont.appendChild(speedSpan);
-        setDragAndDrop(inVideoCont, overlayVideoCont);
+        setDragAndDrop(overlayVideoCont, inVideoCont);
         
         // inVideoCont.addEventListener("mouseenter",showMore);
         // inVideoCont.addEventListener("mouseout",showLess);
