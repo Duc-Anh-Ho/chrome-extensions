@@ -39,117 +39,71 @@ const debounceThottled = (callback, debounceDelay, throttleDelay) => {
         await callback(...args);
     }, throttleDelay), debounceDelay);
 }
-// https://javascript.info/mouse-drag-and-drop
+// REFER: https://javascript.info/mouse-drag-and-drop
 const createDragAndDrop = (parentElement, ...childElements) => {
-    // let shadowElement = targetElement.cloneNode(true);
-    // targetElement.style.display = "none";
-    // parentElement.appendChild(shadowElement);
-
     const offset = {};
-    let isDragging = false;
-    let opacity, shadowElement;
-
-    // Parent Events
-    const dragEnter = (event) => {};
-    const dragOver = (event) => {
-        event.preventDefault(); // Can enable drag icon.
-        return false;
-        const coverRect = event.currentTarget.getBoundingClientRect();
+    let shadowElement = null;
+    let originalOpacity;
+    // Defined
+    const initDrag = (event) => {
+        shadowElement = event.currentTarget;
+        const shadowRect = shadowElement.getBoundingClientRect();
+        originalOpacity = shadowElement.style.opacity;
+        shadowElement.style.opacity = shadowElement.style.opacity * 100 / 300; // Parse int 1/3 transparent
+        offset.top = event.clientX - shadowRect.x;
+        offset.left = event.clientY - shadowRect.y;
+    }
+    const startDrag = (event) => {
+        if (!shadowElement) return;
         const parentRect = parentElement.getBoundingClientRect();
+        const shadowRect = shadowElement.getBoundingClientRect();
         const position = {
-            top: Math.round(event.clientY - offset.top - parentRect.top),
-            left: Math.round(event.clientX - offset.left - parentRect.left),
+            top: Math.round(event.clientY - (offset.top || shadowRect.top / 2) - parentRect.top),
+            left: Math.round(event.clientX - (offset.left || shadowRect.left / 2) - parentRect.left),
         };
+        // Limit inside Parent only
+        position.top = Math.max(Math.min(position.top, parentRect.height - shadowRect.height), 0);
+        position.left = Math.max(Math.min(position.left, parentRect.width - shadowRect.width), 0);
         shadowElement.style.top = `${position.top}px`;
         shadowElement.style.left = `${position.left}px`;
-    };
-    const dragLeave = (event) => {};
-    // TODO: Optional drop inside only.
-    const drop = (event) => {
-        return false;
-        const coverElement = event.currentTarget;
-        const coverRect = coverElement.getBoundingClientRect();
-        const dropDataId = event.dataTransfer.getData("text/plain");
-        const dropElement = document.getElementById(dropDataId);
-        const dropRect = dropElement.getBoundingClientRect();
-        const position = {
-            top: Math.round(event.clientY - offset.top - coverRect.top),
-            left: Math.round(event.clientX - offset.left - coverRect.left),
-        };
-        dropElement.style.opacity = opacity;
-        dropElement.style.top = `${position.top}px`;
-        dropElement.style.left = `${position.left}px`;
+    }
+    const stopDrag = () => {
+        if (!shadowElement) return;
+        shadowElement.style.opacity = originalOpacity;
+        offset.top = null;
+        offset.left = null;
+        shadowElement = null;
+    }
+    // Callbacks
+    const dragOver = (event) => {
+        event.preventDefault(); // Show drag/drop default icon.
     };
     const mouseMove = (event) => {
-        if (!isDragging) return false;
-        // const coverRect = event.currentTarget.getBoundingClientRect();
-        const parentRect = parentElement.getBoundingClientRect();
-        const position = {
-            top: Math.round(event.clientY - offset.top - parentRect.top),
-            left: Math.round(event.clientX - offset.left - parentRect.left),
-        };
-        shadowElement.style.top = `${position.top}px`;
-        shadowElement.style.left = `${position.left}px`;
+        startDrag(event);
     };
-    // Child Events
     const selectStart = (event) => {
-        event.preventDefault(); // Prevent Select text and drag
+        event.preventDefault(); // Prevent select text and drag
     };
     const dragStart = (event) => {
         event.preventDefault(); // Hide default shadow
-        return false;
-        const dragElement = event.currentTarget;
-        const dragRect = dragElement.getBoundingClientRect();
-        opacity = dragElement.style.opacity;
-        dragElement.style.opacity = "0.3";
-        offset.left = event.clientY - dragRect.y;
-        offset.top = event.clientX - dragRect.x;
-        event.dataTransfer.clearData();
-        event.dataTransfer.setData("text/plain", event.currentTarget.id);
-        shadowElement = dragElement.cloneNode(true);
-        parentElement.appendChild(shadowElement);
-    };
-    const drag = (event) => {};
-    // TODO: Optional drop outside also.
-    const dragEnd = (event) => {
-        return false;
-        const parentRect = parentElement.getBoundingClientRect();
-        const dropElement = event.currentTarget;
-        const position = {
-            top: Math.round(event.clientY - offset.top - parentRect.top),
-            left: Math.round(event.clientX - offset.left - parentRect.left),
-        };
-        dropElement.style.opacity = opacity;
-        dropElement.style.top = `${position.top}px`;
-        dropElement.style.left = `${position.left}px`;
     };
     const mouseDown = (event) => {
-        // return false;
-        const dragElement = event.currentTarget;
-        const dragRect = dragElement.getBoundingClientRect();
-        opacity = dragElement.style.opacity;
-        dragElement.style.opacity = "0.3";
-        offset.top = event.clientX - dragRect.x;
-        offset.left = event.clientY - dragRect.y;
-        shadowElement = dragElement.cloneNode(true);
-        parentElement.appendChild(shadowElement);
-        isDragging = true;
+        event.preventDefault(); // Prevent click into behind elements
+        initDrag(event);
     };
     const mouseUp = (event) => {
-        const dragElement = event.currentTarget;
-        dragElement.style.opacity = opacity;
-        dragElement.style.top = shadowElement.style.top;
-        dragElement.style.left = shadowElement.style.left;
-        isDragging = false;
+        event.preventDefault(); // Prevent click into behind elements
+        stopDrag();
     };
-
+    const mouseLeave = (event) => {
+        stopDrag();
+    }
     parentElement.style.position = "absolute";
     parentElement.style.zIndex = "9999";
-    parentElement.addEventListener("dragenter", dragEnter);
     parentElement.addEventListener("dragover", dragOver);
-    parentElement.addEventListener("dragleave", dragLeave);
-    parentElement.addEventListener("drop", drop);
     parentElement.addEventListener("mousemove", mouseMove);
+    parentElement.addEventListener("mouseup", mouseUp);
+    parentElement.addEventListener("mouseleave", mouseLeave);
     for (const childElement of childElements) {
         childElement.draggable = true;
         childElement.style.position = "absolute";
@@ -157,8 +111,6 @@ const createDragAndDrop = (parentElement, ...childElements) => {
         childElement.style.cursor = "move";
         childElement.addEventListener("selectstart", selectStart);
         childElement.addEventListener("dragstart", dragStart);
-        childElement.addEventListener("drag", drag);
-        childElement.addEventListener("dragend", dragEnd);
         childElement.addEventListener("mousedown", mouseDown);
         childElement.addEventListener("mouseup", mouseUp);
         parentElement.appendChild(childElement);
