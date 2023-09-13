@@ -2,7 +2,7 @@
 // REGULAR
 const regexInput = (regex) => {
     return (event) => {
-        event.target.value = event.target.value.replace(regex, "");
+        event.currentTarget.value = event.currentTarget.value.replace(regex, "");
     };
 };
 const debounce = (callback, delay) => {
@@ -45,52 +45,76 @@ const createDragAndDrop = (parentElement, ...childElements) => {
     // targetElement.style.display = "none";
     // parentElement.appendChild(shadowElement);
 
-    const shadow = {};
     const offset = {};
-    let opacity = 1;
+    let isDragging = false;
+    let opacity, shadowElement;
 
     // Parent Events
     const dragEnter = (event) => {};
     const dragOver = (event) => {
         event.preventDefault(); // Can enable drag icon.
+        return false;
+        const coverRect = event.currentTarget.getBoundingClientRect();
+        const parentRect = parentElement.getBoundingClientRect();
+        const position = {
+            top: Math.round(event.clientY - offset.top - parentRect.top),
+            left: Math.round(event.clientX - offset.left - parentRect.left),
+        };
+        shadowElement.style.top = `${position.top}px`;
+        shadowElement.style.left = `${position.left}px`;
     };
     const dragLeave = (event) => {};
     // TODO: Optional drop inside only.
     const drop = (event) => {
         return false;
-        const parentElement = event.target;
-        const parentRect = parentElement.getBoundingClientRect();
+        const coverElement = event.currentTarget;
+        const coverRect = coverElement.getBoundingClientRect();
         const dropDataId = event.dataTransfer.getData("text/plain");
         const dropElement = document.getElementById(dropDataId);
         const dropRect = dropElement.getBoundingClientRect();
         const position = {
-            top: Math.round(event.clientY - offset.top - parentRect.top),
-            left: Math.round(event.clientX - offset.left - parentRect.left),
+            top: Math.round(event.clientY - offset.top - coverRect.top),
+            left: Math.round(event.clientX - offset.left - coverRect.left),
         };
         dropElement.style.opacity = opacity;
         dropElement.style.top = `${position.top}px`;
         dropElement.style.left = `${position.left}px`;
+    };
+    const mouseMove = (event) => {
+        if (!isDragging) return false;
+        // const coverRect = event.currentTarget.getBoundingClientRect();
+        const parentRect = parentElement.getBoundingClientRect();
+        const position = {
+            top: Math.round(event.clientY - offset.top - parentRect.top),
+            left: Math.round(event.clientX - offset.left - parentRect.left),
+        };
+        shadowElement.style.top = `${position.top}px`;
+        shadowElement.style.left = `${position.left}px`;
     };
     // Child Events
     const selectStart = (event) => {
         event.preventDefault(); // Prevent Select text and drag
     };
     const dragStart = (event) => {
-        // return false;
-        const dragElement = event.target;
+        event.preventDefault(); // Hide default shadow
+        return false;
+        const dragElement = event.currentTarget;
         const dragRect = dragElement.getBoundingClientRect();
+        opacity = dragElement.style.opacity;
         dragElement.style.opacity = "0.3";
         offset.left = event.clientY - dragRect.y;
         offset.top = event.clientX - dragRect.x;
         event.dataTransfer.clearData();
-        event.dataTransfer.setData("text/plain", event.target.id);
+        event.dataTransfer.setData("text/plain", event.currentTarget.id);
+        shadowElement = dragElement.cloneNode(true);
+        parentElement.appendChild(shadowElement);
     };
     const drag = (event) => {};
     // TODO: Optional drop outside also.
     const dragEnd = (event) => {
         return false;
         const parentRect = parentElement.getBoundingClientRect();
-        const dropElement = event.target;
+        const dropElement = event.currentTarget;
         const position = {
             top: Math.round(event.clientY - offset.top - parentRect.top),
             left: Math.round(event.clientX - offset.left - parentRect.left),
@@ -100,11 +124,23 @@ const createDragAndDrop = (parentElement, ...childElements) => {
         dropElement.style.left = `${position.left}px`;
     };
     const mouseDown = (event) => {
-        const dragElement = event.target;
+        // return false;
+        const dragElement = event.currentTarget;
         const dragRect = dragElement.getBoundingClientRect();
+        opacity = dragElement.style.opacity;
         dragElement.style.opacity = "0.3";
         offset.top = event.clientX - dragRect.x;
         offset.left = event.clientY - dragRect.y;
+        shadowElement = dragElement.cloneNode(true);
+        parentElement.appendChild(shadowElement);
+        isDragging = true;
+    };
+    const mouseUp = (event) => {
+        const dragElement = event.currentTarget;
+        dragElement.style.opacity = opacity;
+        dragElement.style.top = shadowElement.style.top;
+        dragElement.style.left = shadowElement.style.left;
+        isDragging = false;
     };
 
     parentElement.style.position = "absolute";
@@ -113,16 +149,18 @@ const createDragAndDrop = (parentElement, ...childElements) => {
     parentElement.addEventListener("dragover", dragOver);
     parentElement.addEventListener("dragleave", dragLeave);
     parentElement.addEventListener("drop", drop);
+    parentElement.addEventListener("mousemove", mouseMove);
     for (const childElement of childElements) {
         childElement.draggable = true;
         childElement.style.position = "absolute";
         childElement.style.userSelect = "none";
         childElement.style.cursor = "move";
         childElement.addEventListener("selectstart", selectStart);
-        childElement.addEventListener("mousedown", mouseDown);
         childElement.addEventListener("dragstart", dragStart);
         childElement.addEventListener("drag", drag);
         childElement.addEventListener("dragend", dragEnd);
+        childElement.addEventListener("mousedown", mouseDown);
+        childElement.addEventListener("mouseup", mouseUp);
         parentElement.appendChild(childElement);
     }
 };
