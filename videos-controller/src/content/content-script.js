@@ -9,6 +9,7 @@ const main = async () => {
     let activeVideo = null;
     let parentActiveVideo = null;
     let displayTimer = null;
+    let isFullScreen = false;
     const setSpeed = common.throttleDebounced(
         async (speed) => {
             const storage = await common.getStorage(["videosConfig"]);
@@ -70,7 +71,7 @@ const main = async () => {
         const speedSpan = document.createElement("span");
         const displaySpeed = (speed / 100).toFixed(2);
         overlayVideoCont.id = "overlay-video-container";
-        overlayVideoCont.style.position = "absolute";
+        overlayVideoCont.style.position = isFullScreen ? "fixed" : "absolute";
         overlayVideoCont.style.zIndex = "1";
         overlayVideoCont.style.top = `${activeVideo.offsetTop}px`;
         overlayVideoCont.style.left = `${activeVideo.offsetLeft}px`;
@@ -87,7 +88,7 @@ const main = async () => {
         inVideoCont.style.backgroundColor = COLOR.GREEN;
         inVideoCont.style.borderRadius = "0.8em";
         inVideoCont.style.color = COLOR.BLACK;
-        inVideoCont.style.fontSize = "1.3em";
+        inVideoCont.style.fontSize = "1.2em";
         inVideoCont.style.fontWeight = "bold";
         speedSpan.id = "speed-span";
         speedSpan.textContent = `${displaySpeed}`;
@@ -98,7 +99,7 @@ const main = async () => {
         // inVideoCont.addEventListener("mouseout",showLess);
 
         parentVideo.insertAdjacentElement("afterbegin", overlayVideoCont);
-        setDisplayTimer(100000); // TODO: Change to 10000 (= 10s)
+        setDisplayTimer(100000);
     };
     const removeCoverInVideo = () => {
         const overlayVideoCont = document.getElementById("overlay-video-container");
@@ -156,7 +157,7 @@ const main = async () => {
             case "KeyF":
                 if (event.ctrlKey) break;
                 if (!activeVideo) break;
-                await common.toggleFullscreen(document, activeVideo);
+                isFullScreen = await common.toggleFullscreen(document, activeVideo);
                 break;
             case "Digit0":
                 if (event.shiftKey) setSpeed(0);

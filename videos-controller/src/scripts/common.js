@@ -43,9 +43,10 @@ const debounceThottled = (callback, debounceDelay, throttleDelay) => {
 const createDragAndDrop = (parentElement, ...childElements) => {
     const offset = {};
     let shadowElement = null;
+    const canDragBack = true;
     let originalOpacity;
     // Defined
-    const initDrag = (event) => {
+    const startDrag = (event) => {
         shadowElement = event.currentTarget;
         const shadowRect = shadowElement.getBoundingClientRect();
         originalOpacity = shadowElement.style.opacity;
@@ -53,13 +54,13 @@ const createDragAndDrop = (parentElement, ...childElements) => {
         offset.top = event.clientX - shadowRect.x;
         offset.left = event.clientY - shadowRect.y;
     }
-    const startDrag = (event) => {
+    const runDrag = (event) => {
         if (!shadowElement) return;
         const parentRect = parentElement.getBoundingClientRect();
         const shadowRect = shadowElement.getBoundingClientRect();
         const position = {
-            top: Math.round(event.clientY - (offset.top || shadowRect.top / 2) - parentRect.top),
-            left: Math.round(event.clientX - (offset.left || shadowRect.left / 2) - parentRect.left),
+            top: Math.round((event.clientY - offset.top - parentRect.top) * 100 / 100),
+            left: Math.round((event.clientX - offset.left - parentRect.left) * 100 / 100),
         };
         // Limit inside Parent only
         position.top = Math.max(Math.min(position.top, parentRect.height - shadowRect.height), 0);
@@ -79,7 +80,7 @@ const createDragAndDrop = (parentElement, ...childElements) => {
         event.preventDefault(); // Show drag/drop default icon.
     };
     const mouseMove = (event) => {
-        startDrag(event);
+        runDrag(event);
     };
     const selectStart = (event) => {
         event.preventDefault(); // Prevent select text and drag
@@ -89,7 +90,7 @@ const createDragAndDrop = (parentElement, ...childElements) => {
     };
     const mouseDown = (event) => {
         event.preventDefault(); // Prevent click into behind elements
-        initDrag(event);
+        startDrag(event);
     };
     const mouseUp = (event) => {
         event.preventDefault(); // Prevent click into behind elements
@@ -98,12 +99,17 @@ const createDragAndDrop = (parentElement, ...childElements) => {
     const mouseLeave = (event) => {
         stopDrag();
     }
-    parentElement.style.position = "absolute";
     parentElement.style.zIndex = "9999";
     parentElement.addEventListener("dragover", dragOver);
     parentElement.addEventListener("mousemove", mouseMove);
     parentElement.addEventListener("mouseup", mouseUp);
-    parentElement.addEventListener("mouseleave", mouseLeave);
+    if (canDragBack) {
+        document.addEventListener("mouseup", mouseUp);
+        document.addEventListener("mouseleave", mouseLeave);
+    } else {
+        parentElement.addEventListener("mouseup", mouseUp);
+        parentElement.addEventListener("mouseleave", mouseLeave);
+    }
     for (const childElement of childElements) {
         childElement.draggable = true;
         childElement.style.position = "absolute";
