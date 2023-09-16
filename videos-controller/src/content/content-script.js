@@ -99,7 +99,7 @@ const main = async () => {
         // inVideoCont.addEventListener("mouseout",showLess);
 
         parentVideo.insertAdjacentElement("afterbegin", overlayVideoCont);
-        setDisplayTimer(100000);
+        // setDisplayTimer(100000);
     };
     const removeCoverInVideo = () => {
         const overlayVideoCont = document.getElementById("overlay-video-container");
