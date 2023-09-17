@@ -60,18 +60,6 @@ const main = async () => {
         650,
         300
     );
-        // const createCoverVideoCont = (id, video) => {
-    //     const coverVideoCont = document.createElement("div");
-    //     coverVideoCont.id = id;
-    //     coverVideoCont.style.top = `${video.offsetTop}px`;
-    //     coverVideoCont.style.left = `${video.offsetLeft}px`;
-    //     coverVideoCont.style.height = `${video.offsetHeight}px`;
-    //     coverVideoCont.style.width = `${video.offsetWidth}px`;
-    //     parentActiveVideo = video.parentNode;
-    //     parentActiveVideo.insertAdjacentElement("afterbegin", coverVideoCont);
-    //     coverVideoCont.appendChild(video);
-    //     return coverVideoCont;
-    // };
     const createOverlayVideoCont = (id, video) => {
         const overlayVideoCont = document.createElement("div");
         overlayVideoCont.id = id;
@@ -109,7 +97,6 @@ const main = async () => {
         removeCoverInVideo();
         if (!video) return;
         const displaySpeed = (speed / 100).toFixed(2);
-        // const coverVideoCont = createCoverVideoCont(cover-video-container, video);
         const parentVideo = video.parentNode;
         const overlayVideoCont = createOverlayVideoCont("overlay-video-container", video);
         const inVideoCont = createInVideoCont("in-video-container");
@@ -124,7 +111,7 @@ const main = async () => {
         // inVideoCont.addEventListener("mouseenter",showMore);
         // inVideoCont.addEventListener("mouseout",showLess);
 
-        // setDisplayTimer(100000);
+        setDisplayTimer(10000);
     };
     const removeCoverInVideo = () => {
         const overlayVideoCont = document.getElementById("overlay-video-container");

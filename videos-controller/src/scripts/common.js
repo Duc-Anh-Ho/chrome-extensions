@@ -99,7 +99,8 @@ const createDragAndDrop = (parentElement, ...childElements) => {
     const mouseLeave = (event) => {
         stopDrag();
     }
-    parentElement.style.zIndex = "9999";
+    parentElement.style.zIndex = "9998";
+    parentElement.style.position = "relative";
     parentElement.addEventListener("dragover", dragOver);
     parentElement.addEventListener("mousemove", mouseMove);
     parentElement.addEventListener("mouseup", mouseUp);
@@ -115,6 +116,7 @@ const createDragAndDrop = (parentElement, ...childElements) => {
         childElement.style.position = "absolute";
         childElement.style.userSelect = "none";
         childElement.style.cursor = "move";
+        childElement.style.zIndex = "9999";
         childElement.addEventListener("selectstart", selectStart);
         childElement.addEventListener("dragstart", dragStart);
         childElement.addEventListener("mousedown", mouseDown);
@@ -124,7 +126,7 @@ const createDragAndDrop = (parentElement, ...childElements) => {
 };
 
 // VIDEOS CONTROLLER
-const isFullScreen = (doc) => !!(
+const isFullScreen = (doc, elem) => !!(
     doc.fullscreenElement ||
     doc.webkitFullscreenElement ||
     doc.mozFullScreenElement ||
@@ -167,10 +169,12 @@ const toggleFullscreen = async (doc, ...elems) => {
     // NOTE: Ordering of elems is order of #top-layer.
     for (const elem of elems) {
         if (!elem) break;
-        if (isFullScreen(doc)) {
-            await disableFullscreen(doc);
+        if (isFullScreen(doc, elem)) {
+            await disableFullscreen(doc, elem);
+            return false;
         } else {
             await enableFullScreen(doc, elem);
+            return true;
         }
     }
 };
