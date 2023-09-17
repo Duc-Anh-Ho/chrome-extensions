@@ -7,7 +7,6 @@ console.info("Content script loaded!");
 const main = async () => {
     // VIDEO controllers
     let activeVideo = null;
-    let parentActiveVideo = null;
     let displayTimer = null;
     let isFullScreen = false;
     const setSpeed = common.throttleDebounced(
@@ -22,7 +21,7 @@ const main = async () => {
                 videosConfig.speed = speed;
             }
             await common.setStorage({ videosConfig });
-            await setDisplayInVideo(parentActiveVideo, videosConfig.speed);
+            await createDisplayInVideo(activeVideo, videosConfig.speed);
         },
         100,
         50
@@ -50,38 +49,41 @@ const main = async () => {
             for (const video of videos) {
                 if (common.isPlaying(video)) {
                     activeVideo = video;
-                    parentActiveVideo = activeVideo.parentNode;
                     activeVideo.playbackRate = (speed / 100).toFixed(2);
                     await common.requestAction(ACTION.SHOW_PAGE_ACTION);
                     return;
                 }
             }
             activeVideo = common.getLastPlayedVideo(document);
-            parentActiveVideo = activeVideo.parentNode;
             await common.requestAction(ACTION.HIDE_PAGE_ACTION);
         },
         650,
         300
     );
-    const setDisplayInVideo = async (parentVideo, speed) => {
-        removeCoverInVideo();
-        if (!parentVideo) return;
+        // const createCoverVideoCont = (id, video) => {
+    //     const coverVideoCont = document.createElement("div");
+    //     coverVideoCont.id = id;
+    //     coverVideoCont.style.top = `${video.offsetTop}px`;
+    //     coverVideoCont.style.left = `${video.offsetLeft}px`;
+    //     coverVideoCont.style.height = `${video.offsetHeight}px`;
+    //     coverVideoCont.style.width = `${video.offsetWidth}px`;
+    //     parentActiveVideo = video.parentNode;
+    //     parentActiveVideo.insertAdjacentElement("afterbegin", coverVideoCont);
+    //     coverVideoCont.appendChild(video);
+    //     return coverVideoCont;
+    // };
+    const createOverlayVideoCont = (id, video) => {
         const overlayVideoCont = document.createElement("div");
+        overlayVideoCont.id = id;
+        overlayVideoCont.style.top = `${video.offsetTop}px`;
+        overlayVideoCont.style.left = `${video.offsetLeft}px`;
+        overlayVideoCont.style.height = `${video.offsetHeight}px`;
+        overlayVideoCont.style.width = `${video.offsetWidth}px`;
+        return overlayVideoCont;
+    };
+    const createInVideoCont = (id) => {
         const inVideoCont = document.createElement("div");
-        const speedSpan = document.createElement("span");
-        const displaySpeed = (speed / 100).toFixed(2);
-        overlayVideoCont.id = "overlay-video-container";
-        overlayVideoCont.style.position = isFullScreen ? "fixed" : "absolute";
-        // overlayVide`oCont.style.backgroundColor = "green";
-        // if (isFullScreen) {
-        //     common.r
-        // }
-        overlayVideoCont.style.zIndex = "1";
-        overlayVideoCont.style.top = `${activeVideo.offsetTop}px`;
-        overlayVideoCont.style.left = `${activeVideo.offsetLeft}px`;
-        overlayVideoCont.style.height = `${activeVideo.offsetHeight}px`;
-        overlayVideoCont.style.width = `${activeVideo.offsetWidth}px`;
-        inVideoCont.id = "in-video-container";
+        inVideoCont.id = id;
         inVideoCont.style.position = "absolute";
         inVideoCont.style.top = "3em";
         inVideoCont.style.left = "1.25em";
@@ -94,15 +96,34 @@ const main = async () => {
         inVideoCont.style.color = COLOR.BLACK;
         inVideoCont.style.fontSize = "1.2em";
         inVideoCont.style.fontWeight = "bold";
-        speedSpan.id = "speed-span";
-        speedSpan.textContent = `${displaySpeed}`;
+        return inVideoCont;
+    };
+    const createSpeedSpan = (id, speed) => {
+        const speedSpan = document.createElement("span");
+        speedSpan.id = id;
+        speedSpan.textContent = `${speed}`;
+        return speedSpan;
+    
+    }  
+    const createDisplayInVideo = async (video, speed) => {
+        removeCoverInVideo();
+        if (!video) return;
+        const displaySpeed = (speed / 100).toFixed(2);
+        // const coverVideoCont = createCoverVideoCont(cover-video-container, video);
+        const parentVideo = video.parentNode;
+        const overlayVideoCont = createOverlayVideoCont("overlay-video-container", video);
+        const inVideoCont = createInVideoCont("in-video-container");
+        const speedSpan = createSpeedSpan("speed-span", displaySpeed);
+        const isFullScreen = common.isFullScreen(document);
+        // overlayVideoCont.style.position = isFullScreen ? "fixed" : "absolute";
         inVideoCont.appendChild(speedSpan);
         common.createDragAndDrop(overlayVideoCont, inVideoCont);
-
+        parentVideo.insertAdjacentElement("afterbegin", overlayVideoCont);
+        if (isFullScreen) await common.enableFullScreen(document, overlayVideoCont)
+        
         // inVideoCont.addEventListener("mouseenter",showMore);
         // inVideoCont.addEventListener("mouseout",showLess);
 
-        parentVideo.insertAdjacentElement("afterbegin", overlayVideoCont);
         // setDisplayTimer(100000);
     };
     const removeCoverInVideo = () => {

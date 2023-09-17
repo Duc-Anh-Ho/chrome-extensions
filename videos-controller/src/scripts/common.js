@@ -163,13 +163,15 @@ const disableFullscreen = async (doc, elem) => {
         await doc.msExitFullscreen();
     }
 };
-const toggleFullscreen = async (doc, elem) => {
-    if (isFullScreen(doc)) {
-        await disableFullscreen(doc);
-        return false;
-    } else {
-        await enableFullScreen(doc, elem);
-        return true;
+const toggleFullscreen = async (doc, ...elems) => {
+    // NOTE: Ordering of elems is order of #top-layer.
+    for (const elem of elems) {
+        if (!elem) break;
+        if (isFullScreen(doc)) {
+            await disableFullscreen(doc);
+        } else {
+            await enableFullScreen(doc, elem);
+        }
     }
 };
 const getVideos = (doc) => {

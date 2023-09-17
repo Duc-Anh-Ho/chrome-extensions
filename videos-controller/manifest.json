@@ -52,6 +52,7 @@
             "src/content/content-script.js"
             , "src/scripts/common.js"
             , "src/constants/constants.js"
+            , "src/styles/css/main.css"
         ]
     }]
 }
