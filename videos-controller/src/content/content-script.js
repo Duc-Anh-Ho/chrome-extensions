@@ -72,6 +72,10 @@ const main = async () => {
         const displaySpeed = (speed / 100).toFixed(2);
         overlayVideoCont.id = "overlay-video-container";
         overlayVideoCont.style.position = isFullScreen ? "fixed" : "absolute";
+        // overlayVide`oCont.style.backgroundColor = "green";
+        // if (isFullScreen) {
+        //     common.r
+        // }
         overlayVideoCont.style.zIndex = "1";
         overlayVideoCont.style.top = `${activeVideo.offsetTop}px`;
         overlayVideoCont.style.left = `${activeVideo.offsetLeft}px`;
@@ -154,9 +158,12 @@ const main = async () => {
                 break;
             case "Enter":
                 if (!event.altKey) break;
+                isFullScreen = await common.toggleFullscreen(document, activeVideo);
+                break;
             case "KeyF":
                 if (event.ctrlKey) break;
                 if (!activeVideo) break;
+                if (location.host.includes("youtube")) break; // TODO: Change to optional
                 isFullScreen = await common.toggleFullscreen(document, activeVideo);
                 break;
             case "Digit0":

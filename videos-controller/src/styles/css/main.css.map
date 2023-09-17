@@ -1,1 +1,10 @@
-{"version":3,"sourceRoot":"","sources":["../sass/main.scss"],"names":[],"mappings":"AAIA;EACI","file":"main.css"}
+{
+    "version": 3,
+    "sourceRoot": "",
+    "sources": [
+        "../sass/main.scss"
+    ],
+    "names": [],
+    "mappings": "AAIA;EACI",
+    "file": "main.css"
+}
