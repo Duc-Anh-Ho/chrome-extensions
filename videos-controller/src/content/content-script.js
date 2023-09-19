@@ -101,13 +101,10 @@ const main = async () => {
         const overlayVideoCont = createOverlayVideoCont("overlay-video-container", video);
         const inVideoCont = createInVideoCont("in-video-container");
         const speedSpan = createSpeedSpan("speed-span", displaySpeed);
-        const isFullScreen = common.isFullScreen(document);
         // overlayVideoCont.style.position = isFullScreen ? "fixed" : "absolute";
         inVideoCont.appendChild(speedSpan);
-        common.createDragAndDrop(overlayVideoCont, inVideoCont);
         parentVideo.insertAdjacentElement("afterbegin", overlayVideoCont);
-        if (isFullScreen) await common.enableFullScreen(document, overlayVideoCont)
-        
+        common.createDragAndDrop(overlayVideoCont, inVideoCont);        
         // inVideoCont.addEventListener("mouseenter",showMore);
         // inVideoCont.addEventListener("mouseout",showLess);
 

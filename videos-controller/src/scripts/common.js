@@ -99,8 +99,8 @@ const createDragAndDrop = (parentElement, ...childElements) => {
     const mouseLeave = (event) => {
         stopDrag();
     }
-    parentElement.style.zIndex = "9998";
-    parentElement.style.position = "relative";
+    parentElement.style.zIndex = "9999";
+    parentElement.style.position = "absolute";
     parentElement.addEventListener("dragover", dragOver);
     parentElement.addEventListener("mousemove", mouseMove);
     parentElement.addEventListener("mouseup", mouseUp);
@@ -116,7 +116,6 @@ const createDragAndDrop = (parentElement, ...childElements) => {
         childElement.style.position = "absolute";
         childElement.style.userSelect = "none";
         childElement.style.cursor = "move";
-        childElement.style.zIndex = "9999";
         childElement.addEventListener("selectstart", selectStart);
         childElement.addEventListener("dragstart", dragStart);
         childElement.addEventListener("mousedown", mouseDown);
