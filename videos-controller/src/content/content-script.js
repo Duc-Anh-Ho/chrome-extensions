@@ -101,6 +101,9 @@ const main = async () => {
         const overlayVideoCont = createOverlayVideoCont("overlay-video-container", video);
         const inVideoCont = createInVideoCont("in-video-container");
         const speedSpan = createSpeedSpan("speed-span", displaySpeed);
+        if (isFullScreen) {
+            overlayVideoCont.style.position
+        }
         // overlayVideoCont.style.position = isFullScreen ? "fixed" : "absolute";
         inVideoCont.appendChild(speedSpan);
         parentVideo.insertAdjacentElement("afterbegin", overlayVideoCont);
@@ -108,7 +111,7 @@ const main = async () => {
         // inVideoCont.addEventListener("mouseenter",showMore);
         // inVideoCont.addEventListener("mouseout",showLess);
 
-        setDisplayTimer(10000);
+        // setDisplayTimer(10000);
     };
     const removeCoverInVideo = () => {
         const overlayVideoCont = document.getElementById("overlay-video-container");
