@@ -99,8 +99,6 @@ const createDragAndDrop = (parentElement, ...childElements) => {
     const mouseLeave = (event) => {
         stopDrag();
     }
-    parentElement.style.zIndex = "9999";
-    parentElement.style.position = "absolute";
     parentElement.addEventListener("dragover", dragOver);
     parentElement.addEventListener("mousemove", mouseMove);
     parentElement.addEventListener("mouseup", mouseUp);

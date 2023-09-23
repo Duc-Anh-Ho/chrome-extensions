@@ -61,12 +61,20 @@ const main = async () => {
         300
     );
     const createOverlayVideoCont = (id, video) => {
-        const overlayVideoCont = document.createElement("div");
+        const overlayVideoCont = document.createElement("dialog"); // NOTE: Must dialog tag because fullscreen can add top-rate
         overlayVideoCont.id = id;
-        overlayVideoCont.style.top = `${video.offsetTop}px`;
-        overlayVideoCont.style.left = `${video.offsetLeft}px`;
-        overlayVideoCont.style.height = `${video.offsetHeight}px`;
-        overlayVideoCont.style.width = `${video.offsetWidth}px`;
+        overlayVideoCont.style.backgroundColor = "transparent";
+        overlayVideoCont.style.zIndex = "9999";
+        overlayVideoCont.style.padding = "0";
+        overlayVideoCont.style.margin = "0";
+        overlayVideoCont.style.border = "none";
+        overlayVideoCont.style.position = isFullScreen ? "fixed" : "absolute";
+        overlayVideoCont.style.top = isFullScreen ? "0" : `${video.offsetTop}px`;
+        overlayVideoCont.style.left = isFullScreen ? "0" : `${video.offsetLeft}px`;
+        overlayVideoCont.style.height = isFullScreen ? "100%" : `${video.offsetHeight}px`;
+        overlayVideoCont.style.width = isFullScreen ? "100%" : `${video.offsetWidth}px`;
+        overlayVideoCont.style.maxHeight = "100%";
+        overlayVideoCont.style.maxWidth = "100%";
         return overlayVideoCont;
     };
     const createInVideoCont = (id) => {
@@ -101,17 +109,20 @@ const main = async () => {
         const overlayVideoCont = createOverlayVideoCont("overlay-video-container", video);
         const inVideoCont = createInVideoCont("in-video-container");
         const speedSpan = createSpeedSpan("speed-span", displaySpeed);
-        if (isFullScreen) {
-            overlayVideoCont.style.position
-        }
-        // overlayVideoCont.style.position = isFullScreen ? "fixed" : "absolute";
         inVideoCont.appendChild(speedSpan);
         parentVideo.insertAdjacentElement("afterbegin", overlayVideoCont);
-        common.createDragAndDrop(overlayVideoCont, inVideoCont);        
+        common.createDragAndDrop(overlayVideoCont, inVideoCont);
+        if (isFullScreen) {
+            overlayVideoCont.close();
+            overlayVideoCont.showModal();
+        } else {
+            overlayVideoCont.close();
+            overlayVideoCont.show();
+        }  
         // inVideoCont.addEventListener("mouseenter",showMore);
         // inVideoCont.addEventListener("mouseout",showLess);
 
-        // setDisplayTimer(10000);
+        setDisplayTimer(1000000); //TODO: Optional choice
     };
     const removeCoverInVideo = () => {
         const overlayVideoCont = document.getElementById("overlay-video-container");
@@ -139,8 +150,7 @@ const main = async () => {
     });
 
     document.addEventListener("keydown", async (event) => {
-        // Refresh/Update variables
-        common.setLastPlayedVideo(document);
+        common.setLastPlayedVideo(document); // Refresh/Update variables
         syncPlaybackRate();
         if (isInputting(event)) return; // Prevents shortcut While Inputing
         switch (event.code) {
@@ -167,12 +177,14 @@ const main = async () => {
             case "Enter":
                 if (!event.altKey) break;
                 isFullScreen = await common.toggleFullscreen(document, activeVideo);
+                removeCoverInVideo();
                 break;
             case "KeyF":
                 if (event.ctrlKey) break;
                 if (!activeVideo) break;
                 if (location.host.includes("youtube")) break; // TODO: Change to optional
                 isFullScreen = await common.toggleFullscreen(document, activeVideo);
+                removeCoverInVideo();
                 break;
             case "Digit0":
                 if (event.shiftKey) setSpeed(0);
@@ -192,6 +204,8 @@ const main = async () => {
             case "Digit5":
                 if (event.shiftKey) setSpeed(500);
                 break;
+            case "Backquote":
+                if (event.shiftKey) removeCoverInVideo();
             default:
                 break;
         }
