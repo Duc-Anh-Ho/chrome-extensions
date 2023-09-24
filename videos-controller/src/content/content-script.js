@@ -57,7 +57,8 @@ const main = async () => {
         300
     );
     const createOverlayVideoCont = (id, video) => {
-        const overlayVideoCont = document.createElement("dialog"); // NOTE: Must dialog tag because fullscreen can add top-rate
+         // NOTE: Must dialog tag because fullscreen can add top-rate
+        const overlayVideoCont = isFullScreen ? document.createElement("dialog") : document.createElement("div");
         overlayVideoCont.id = id;
         overlayVideoCont.style.backgroundColor = "transparent";
         overlayVideoCont.style.zIndex = "9999";
@@ -90,13 +91,16 @@ const main = async () => {
         inVideoCont.style.fontWeight = "bold";
         return inVideoCont;
     };
+    const createShadowRoot = (elem) => {
+        return elem.attachShadow ? elem.attachShadow({ mode: "open" }) : null;
+    };
     const createSpeedSpan = (id, config) => {
         const speedSpan = document.createElement("span");
         const speed = (config.speed / 100).toFixed(2);
         speedSpan.id = id;
         speedSpan.textContent = `${speed}`;
         return speedSpan;
-    }  
+    };
     const createDisplayInVideo = async (video, config) => {
         removeCoverInVideo();
         if (!video) return;
@@ -107,17 +111,13 @@ const main = async () => {
         const speedSpan = createSpeedSpan("speed-span", config);
         inVideoCont.append(speedSpan);
         parentVideo.prepend(overlayVideoCont);
-        // inVideoCont.appendChild(speedSpan);
-        // parentVideo.insertAdjacentElement("afterbegin", overlayVideoCont);
         common.createDragAndDrop(overlayVideoCont, inVideoCont);
         if (isFullScreen) {
-            overlayVideoCont.close();
             overlayVideoCont.showModal();
         } else {
-            overlayVideoCont.close();
-            overlayVideoCont.show();
-        }  
-
+            const shadowRoot = createShadowRoot(overlayVideoCont);
+            shadowRoot.append(inVideoCont);
+        }
         // inVideoCont.addEventListener("mouseup", (event) => {
         //     console.log("here: line #119"); // TODO: ⬅️ DELETE 
         //     setPosition({
