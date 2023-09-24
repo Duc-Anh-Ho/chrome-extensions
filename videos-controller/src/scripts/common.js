@@ -123,6 +123,7 @@ const createDragAndDrop = (parentElement, ...childElements) => {
 
 // VIDEOS CONTROLLER
 const isFullScreen = (doc, elem) => !!(
+    doc.fullscreen ||
     doc.fullscreenElement ||
     doc.webkitFullscreenElement ||
     doc.mozFullScreenElement ||
@@ -167,10 +168,8 @@ const toggleFullscreen = async (doc, ...elems) => {
         if (!elem) break;
         if (isFullScreen(doc, elem)) {
             await disableFullscreen(doc, elem);
-            return false;
         } else {
             await enableFullScreen(doc, elem);
-            return true;
         }
     }
 };

@@ -8,7 +8,7 @@ const main = async () => {
     // VIDEO controllers
     let activeVideo = null;
     let displayTimer = null;
-    let isFullScreen = false;
+    let isFullScreen = common.isFullScreen(document);
     const setSpeed = common.throttleDebounced(
         async (speed) => {
             const storage = await common.getStorage(["videosConfig"]);
@@ -65,12 +65,12 @@ const main = async () => {
         overlayVideoCont.style.margin = "0";
         overlayVideoCont.style.border = "none";
         overlayVideoCont.style.position = isFullScreen ? "fixed" : "absolute";
-        overlayVideoCont.style.top = isFullScreen ? "0" : `${video.offsetTop}px`;
-        overlayVideoCont.style.left = isFullScreen ? "0" : `${video.offsetLeft}px`;
+        overlayVideoCont.style.top = isFullScreen ? "0px" : `${video.offsetTop}px`;
+        overlayVideoCont.style.left = isFullScreen ? "0px" : `${video.offsetLeft}px`;
         overlayVideoCont.style.height = isFullScreen ? "100%" : `${video.offsetHeight}px`;
         overlayVideoCont.style.width = isFullScreen ? "100%" : `${video.offsetWidth}px`;
-        overlayVideoCont.style.maxHeight = "100%";
-        overlayVideoCont.style.maxWidth = "100%";
+        overlayVideoCont.style.maxHeight = "100vh";
+        overlayVideoCont.style.maxWidth = "100vw";
         return overlayVideoCont;
     };
     const createInVideoCont = (id, config) => {
@@ -100,14 +100,15 @@ const main = async () => {
     const createDisplayInVideo = async (video, config) => {
         removeCoverInVideo();
         if (!video) return;
+        isFullScreen = common.isFullScreen(document);
         const parentVideo = video.parentNode;
         const overlayVideoCont = createOverlayVideoCont("overlay-video-container", video);
         const inVideoCont = createInVideoCont("in-video-container", config);
         const speedSpan = createSpeedSpan("speed-span", config);
         inVideoCont.append(speedSpan);
-        // inVideoCont.append(speedSpan);
-        // parentVideo.prepend(overlayVideoCont);
-        parentVideo.insertAdjacentElement("afterbegin", overlayVideoCont);
+        parentVideo.prepend(overlayVideoCont);
+        // inVideoCont.appendChild(speedSpan);
+        // parentVideo.insertAdjacentElement("afterbegin", overlayVideoCont);
         common.createDragAndDrop(overlayVideoCont, inVideoCont);
         if (isFullScreen) {
             overlayVideoCont.close();
@@ -165,11 +166,11 @@ const main = async () => {
         common.setLastPlayedVideo(document);
         syncPlaybackRate();
     });
-    addEventListener("scroll", (event) => {
+    document.addEventListener("scroll", (event) => {
         syncPlaybackRate();
     });
-
     document.addEventListener("keydown", async (event) => {
+        // console.log("event.code:", event.code);
         common.setLastPlayedVideo(document); // Refresh/Update variables
         syncPlaybackRate();
         if (isInputting(event)) return; // Prevents shortcut While Inputing
@@ -196,14 +197,14 @@ const main = async () => {
                 break;
             case "Enter":
                 if (!event.altKey) break;
-                isFullScreen = await common.toggleFullscreen(document, activeVideo);
+                await common.toggleFullscreen(document, activeVideo);
                 removeCoverInVideo();
                 break;
             case "KeyF":
                 if (event.ctrlKey) break;
                 if (!activeVideo) break;
                 if (location.host.includes("youtube")) break; // TODO: Change to optional
-                isFullScreen = await common.toggleFullscreen(document, activeVideo);
+                await common.toggleFullscreen(document, activeVideo);
                 removeCoverInVideo();
                 break;
             case "Digit0":
@@ -223,6 +224,10 @@ const main = async () => {
                 break;
             case "Digit5":
                 if (event.shiftKey) setSpeed(500);
+                break;
+            case "Escape":
+                console.log("here: line #228"); // TODO: ⬅️ DELETE 
+                removeCoverInVideo();
                 break;
             case "Backquote":
                 if (event.shiftKey) removeCoverInVideo();
