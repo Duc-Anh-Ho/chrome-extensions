@@ -1,5 +1,5 @@
 "use strict";
-import common, { isInputting } from "../scripts/common.js";
+import common, { isInputting, setStorage } from "../scripts/common.js";
 import { VIDEOS_CONFIG, ACTION, COLOR } from "../constants/constants.js";
 
 console.info("Content script loaded!");
@@ -21,21 +21,17 @@ const main = async () => {
                 videosConfig.speed = speed;
             }
             await common.setStorage({ videosConfig });
-            await createDisplayInVideo(activeVideo, videosConfig.speed);
+            await createDisplayInVideo(activeVideo, videosConfig);
         },
         100,
         50
     );
-    const setPosition = common.throttleDebounced(
-        async (position) => {
-            const storage = await common.getStorage(["videosConfig"]);
-            const videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
-            videosConfig.position = position;
-            await common.setStorage({ videosConfig });
-        },
-        100,
-        100
-    );
+    const setPosition =  async (position) => {
+        const storage = await common.getStorage(["videosConfig"]);
+        const videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
+        videosConfig.position = position;
+        await common.setStorage({ videosConfig });
+    };
     const syncPlaybackRate = common.throttleDebounced(
         async (speed) => {
             const videos = common.getVideos(document);
@@ -77,39 +73,40 @@ const main = async () => {
         overlayVideoCont.style.maxWidth = "100%";
         return overlayVideoCont;
     };
-    const createInVideoCont = (id) => {
+    const createInVideoCont = (id, config) => {
         const inVideoCont = document.createElement("div");
         inVideoCont.id = id;
         inVideoCont.style.position = "absolute";
-        inVideoCont.style.top = "3em";
-        inVideoCont.style.left = "1.25em";
+        inVideoCont.style.top = `${config.position.top}`;
+        inVideoCont.style.left = `${config.position.left}`;
         inVideoCont.style.height = "fit-content";
         inVideoCont.style.width = "fit-content";
         inVideoCont.style.padding = "0.2em";
         inVideoCont.style.opacity = "0.8"; // TODO: Change to dynamic input
         inVideoCont.style.backgroundColor = COLOR.GREEN;
-        inVideoCont.style.borderRadius = "0.8em";
+        inVideoCont.style.borderRadius = "0.6em";
         inVideoCont.style.color = COLOR.BLACK;
-        inVideoCont.style.fontSize = "1.2em";
+        inVideoCont.style.fontSize = "15px";
         inVideoCont.style.fontWeight = "bold";
         return inVideoCont;
     };
-    const createSpeedSpan = (id, speed) => {
+    const createSpeedSpan = (id, config) => {
         const speedSpan = document.createElement("span");
+        const speed = (config.speed / 100).toFixed(2);
         speedSpan.id = id;
         speedSpan.textContent = `${speed}`;
         return speedSpan;
-    
     }  
-    const createDisplayInVideo = async (video, speed) => {
+    const createDisplayInVideo = async (video, config) => {
         removeCoverInVideo();
         if (!video) return;
-        const displaySpeed = (speed / 100).toFixed(2);
         const parentVideo = video.parentNode;
         const overlayVideoCont = createOverlayVideoCont("overlay-video-container", video);
-        const inVideoCont = createInVideoCont("in-video-container");
-        const speedSpan = createSpeedSpan("speed-span", displaySpeed);
-        inVideoCont.appendChild(speedSpan);
+        const inVideoCont = createInVideoCont("in-video-container", config);
+        const speedSpan = createSpeedSpan("speed-span", config);
+        inVideoCont.append(speedSpan);
+        // inVideoCont.append(speedSpan);
+        // parentVideo.prepend(overlayVideoCont);
         parentVideo.insertAdjacentElement("afterbegin", overlayVideoCont);
         common.createDragAndDrop(overlayVideoCont, inVideoCont);
         if (isFullScreen) {
@@ -119,6 +116,29 @@ const main = async () => {
             overlayVideoCont.close();
             overlayVideoCont.show();
         }  
+
+        // inVideoCont.addEventListener("mouseup", (event) => {
+        //     console.log("here: line #119"); // TODO: ⬅️ DELETE 
+        //     setPosition({
+        //         top: inVideoCont.style.top,
+        //         left: inVideoCont.style.left
+        //     })
+        // })
+        // document.addEventListener("mouseup", (event) => {
+        //     console.log("here: line #126"); // TODO: ⬅️ DELETE 
+        //     setPosition({
+        //         top: inVideoCont.style.top,
+        //         left: inVideoCont.style.left
+        //     })
+        // })
+        // overlayVideoCont.addEventListener("mouseLeave", (event) => {
+        //     console.log("here: line #133"); // TODO: ⬅️ DELETE 
+        //     setPosition({
+        //         top: inVideoCont.style.top,
+        //         left: inVideoCont.style.left
+        //     })
+        // })
+
         // inVideoCont.addEventListener("mouseenter",showMore);
         // inVideoCont.addEventListener("mouseout",showLess);
 

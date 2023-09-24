@@ -101,7 +101,6 @@ const createDragAndDrop = (parentElement, ...childElements) => {
     }
     parentElement.addEventListener("dragover", dragOver);
     parentElement.addEventListener("mousemove", mouseMove);
-    parentElement.addEventListener("mouseup", mouseUp);
     if (canDragBack) {
         document.addEventListener("mouseup", mouseUp);
         document.addEventListener("mouseleave", mouseLeave);
@@ -118,7 +117,7 @@ const createDragAndDrop = (parentElement, ...childElements) => {
         childElement.addEventListener("dragstart", dragStart);
         childElement.addEventListener("mousedown", mouseDown);
         childElement.addEventListener("mouseup", mouseUp);
-        parentElement.appendChild(childElement);
+        parentElement.append(childElement);
     }
 };
 

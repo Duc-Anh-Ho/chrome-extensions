@@ -5,8 +5,8 @@ const seek = 10;
 const MIN_SPEED = 0;
 const MAX_SPEED = 500;
 const position = {
-    top: "5em",
-    left: "0.5em"
+    top: "30px",
+    left: "50px"
 }
 const VIDEOS_CONFIG = {
     speed
