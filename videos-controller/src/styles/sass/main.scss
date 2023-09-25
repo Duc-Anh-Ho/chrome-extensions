@@ -1,6 +1,12 @@
 @import "variables";
 @import "mixins";
 
-body {
-    background-color: gray;
+#overlay-video-container {
+    &::backdrop {
+        visibility: hidden;
+        z-index: -1;
+        background-color: transparent;
+        box-shadow: none;
+        pointer-events: none;
+    }   
 }

@@ -5,6 +5,19 @@ const regexInput = (regex) => {
         event.currentTarget.value = event.currentTarget.value.replace(regex, "");
     };
 };
+const emToPx = (em, elem) => {
+    return parseFloat(getComputedStyle(elem.parentElement).fontSize) * em;
+};
+const remToPx = (rem) => {
+    return parseFloat(getComputedStyle(document.documentElement).fontSize) * rem;
+};
+const pxToEm = (px, elem) => {
+    return px / parseFloat(getComputedStyle(elem.parentElement).fontSize);
+}
+const pxToRem = (px) => {
+    return px / parseFloat(getComputedStyle(document.documentElement).fontSize);
+}
+
 const debounce = (callback, delay) => {
     delay = delay || 10; // Default
     let timer = null;
@@ -315,6 +328,10 @@ const syncStorage = (namespace, key, callback) => {
 
 export {
     regexInput
+    , emToPx
+    , remToPx
+    , pxToEm
+    , pxToRem
     , debounce
     , throttle
     , debounceThottled
@@ -351,6 +368,10 @@ export {
 
 export default {
     regexInput
+    , emToPx
+    , remToPx
+    , pxToEm
+    , pxToRem
     , debounce
     , throttle
     , debounceThottled
