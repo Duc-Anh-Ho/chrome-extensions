@@ -200,6 +200,17 @@ const getLastPlayedVideo = (doc) => {
         || ((doc.activeElement instanceof HTMLVideoElement) ? doc.activeElement : null)
     )
 };
+const getRelativePosition = (doc, elem) =>{
+    const elemRect = elem.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;;
+    return {
+        top: elemRect.top + scrollTop, 
+        left: elemRect.left + scrollLeft,
+        height: elem.offsetHeight,
+        width: elem.offsetWidth
+    };
+}
 // CHROME API
 const getCurrentTabs = async () => {
     const queryOptions = { active: true, currentWindow: true };
@@ -319,6 +330,7 @@ export {
     , getVideos
     , setLastPlayedVideo
     , getLastPlayedVideo
+    , getRelativePosition
 
     , requestAction
     , setStorage
@@ -354,6 +366,7 @@ export default {
     , getVideos
     , setLastPlayedVideo
     , getLastPlayedVideo
+    , getRelativePosition
 
     , requestAction
     , setStorage

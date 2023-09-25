@@ -58,20 +58,23 @@ const main = async () => {
     );
     const createOverlayVideoCont = (id, video) => {
          // NOTE: Must dialog tag because fullscreen can add top-rate
-        const overlayVideoCont = isFullScreen ? document.createElement("dialog") : document.createElement("div");
+        const overlayVideoCont = document.createElement("dialog");
+        const position = common.getRelativePosition(document, video);
         overlayVideoCont.id = id;
         overlayVideoCont.style.backgroundColor = "transparent";
+        overlayVideoCont.style.border = "none";
+        overlayVideoCont.style.boxShadow = "none";
         overlayVideoCont.style.zIndex = "9999";
         overlayVideoCont.style.padding = "0";
         overlayVideoCont.style.margin = "0";
-        overlayVideoCont.style.border = "none";
         overlayVideoCont.style.position = isFullScreen ? "fixed" : "absolute";
-        overlayVideoCont.style.top = isFullScreen ? "0px" : `${video.offsetTop}px`;
-        overlayVideoCont.style.left = isFullScreen ? "0px" : `${video.offsetLeft}px`;
-        overlayVideoCont.style.height = isFullScreen ? "100%" : `${video.offsetHeight}px`;
-        overlayVideoCont.style.width = isFullScreen ? "100%" : `${video.offsetWidth}px`;
+        overlayVideoCont.style.top = `${position.top}px`;
+        overlayVideoCont.style.left = `${position.left}px`;
+        overlayVideoCont.style.height = isFullScreen ? "100%" : `${position.height}px`;
+        overlayVideoCont.style.width = isFullScreen ? "100%" : `${position.width}px`;
         overlayVideoCont.style.maxHeight = "100vh";
         overlayVideoCont.style.maxWidth = "100vw";
+        overlayVideoCont.style.pointerEvents = "none";
         return overlayVideoCont;
     };
     const createInVideoCont = (id, config) => {
@@ -89,10 +92,8 @@ const main = async () => {
         inVideoCont.style.color = COLOR.BLACK;
         inVideoCont.style.fontSize = "15px";
         inVideoCont.style.fontWeight = "bold";
+        inVideoCont.style.pointerEvents = "auto";
         return inVideoCont;
-    };
-    const createShadowRoot = (elem) => {
-        return elem.attachShadow ? elem.attachShadow({ mode: "open" }) : null;
     };
     const createSpeedSpan = (id, config) => {
         const speedSpan = document.createElement("span");
@@ -112,12 +113,9 @@ const main = async () => {
         inVideoCont.append(speedSpan);
         parentVideo.prepend(overlayVideoCont);
         common.createDragAndDrop(overlayVideoCont, inVideoCont);
-        if (isFullScreen) {
-            overlayVideoCont.showModal();
-        } else {
-            const shadowRoot = createShadowRoot(overlayVideoCont);
-            shadowRoot.append(inVideoCont);
-        }
+        overlayVideoCont.close();
+        overlayVideoCont.showModal();
+
         // inVideoCont.addEventListener("mouseup", (event) => {
         //     console.log("here: line #119"); // TODO: ⬅️ DELETE 
         //     setPosition({
@@ -226,7 +224,6 @@ const main = async () => {
                 if (event.shiftKey) setSpeed(500);
                 break;
             case "Escape":
-                console.log("here: line #228"); // TODO: ⬅️ DELETE 
                 removeCoverInVideo();
                 break;
             case "Backquote":
