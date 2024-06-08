@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     // Events
     speedInp.addEventListener("input", common.regexInput(REGEX.CHR));
-    speedInp.addEventListener("change", async (e) => {
+    speedInp.addEventListener("change", async (event) => {
         const storage = await common.getStorage(["videosConfig"]);
         const videosConfig = storage?.videosConfig || { ...VIDEOS_CONFIG };
         const intSpeed = parseInt(speedInp.value * 100);

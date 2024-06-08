@@ -2,9 +2,22 @@
 // REGULAR
 const regexInput = (regex) => {
     return (event) => {
-        event.target.value = event.target.value.replace(regex, "");
+        event.currentTarget.value = event.currentTarget.value.replace(regex, "");
     };
 };
+const emToPx = (em, elem) => {
+    return parseFloat(getComputedStyle(elem.parentElement).fontSize) * em;
+};
+const remToPx = (rem) => {
+    return parseFloat(getComputedStyle(document.documentElement).fontSize) * rem;
+};
+const pxToEm = (px, elem) => {
+    return px / parseFloat(getComputedStyle(elem.parentElement).fontSize);
+}
+const pxToRem = (px) => {
+    return px / parseFloat(getComputedStyle(document.documentElement).fontSize);
+}
+
 const debounce = (callback, delay) => {
     delay = delay || 10; // Default
     let timer = null;
@@ -39,7 +52,91 @@ const debounceThottled = (callback, debounceDelay, throttleDelay) => {
         await callback(...args);
     }, throttleDelay), debounceDelay);
 }
-const isFullScreen = (doc) => !!(
+// REFER: https://javascript.info/mouse-drag-and-drop
+const createDragAndDrop = (parentElement, ...childElements) => {
+    const offset = {};
+    let shadowElement = null;
+    const canDragBack = true;
+    let originalOpacity;
+    // Defined
+    const startDrag = (event) => {
+        shadowElement = event.currentTarget;
+        const shadowRect = shadowElement.getBoundingClientRect();
+        originalOpacity = shadowElement.style.opacity;
+        shadowElement.style.opacity = shadowElement.style.opacity * 100 / 300; // Parse int 1/3 transparent
+        offset.top = event.clientX - shadowRect.x;
+        offset.left = event.clientY - shadowRect.y;
+    }
+    const runDrag = (event) => {
+        if (!shadowElement) return;
+        const parentRect = parentElement.getBoundingClientRect();
+        const shadowRect = shadowElement.getBoundingClientRect();
+        const position = {
+            top: Math.round((event.clientY - offset.top - parentRect.top) * 100 / 100),
+            left: Math.round((event.clientX - offset.left - parentRect.left) * 100 / 100),
+        };
+        // Limit inside Parent only
+        position.top = Math.max(Math.min(position.top, parentRect.height - shadowRect.height), 0);
+        position.left = Math.max(Math.min(position.left, parentRect.width - shadowRect.width), 0);
+        shadowElement.style.top = `${position.top}px`;
+        shadowElement.style.left = `${position.left}px`;
+    }
+    const stopDrag = () => {
+        if (!shadowElement) return;
+        shadowElement.style.opacity = originalOpacity;
+        offset.top = null;
+        offset.left = null;
+        shadowElement = null;
+    }
+    // Callbacks
+    const dragOver = (event) => {
+        event.preventDefault(); // Show drag/drop default icon.
+    };
+    const mouseMove = (event) => {
+        runDrag(event);
+    };
+    const selectStart = (event) => {
+        event.preventDefault(); // Prevent select text and drag
+    };
+    const dragStart = (event) => {
+        event.preventDefault(); // Hide default shadow
+    };
+    const mouseDown = (event) => {
+        event.preventDefault(); // Prevent click into behind elements
+        startDrag(event);
+    };
+    const mouseUp = (event) => {
+        event.preventDefault(); // Prevent click into behind elements
+        stopDrag();
+    };
+    const mouseLeave = (event) => {
+        stopDrag();
+    }
+    parentElement.addEventListener("dragover", dragOver);
+    parentElement.addEventListener("mousemove", mouseMove);
+    if (canDragBack) {
+        document.addEventListener("mouseup", mouseUp);
+        document.addEventListener("mouseleave", mouseLeave);
+    } else {
+        parentElement.addEventListener("mouseup", mouseUp);
+        parentElement.addEventListener("mouseleave", mouseLeave);
+    }
+    for (const childElement of childElements) {
+        childElement.draggable = true;
+        childElement.style.position = "absolute";
+        childElement.style.userSelect = "none";
+        childElement.style.cursor = "move";
+        childElement.addEventListener("selectstart", selectStart);
+        childElement.addEventListener("dragstart", dragStart);
+        childElement.addEventListener("mousedown", mouseDown);
+        childElement.addEventListener("mouseup", mouseUp);
+        parentElement.append(childElement);
+    }
+};
+
+// VIDEOS CONTROLLER
+const isFullScreen = (doc, elem) => !!(
+    doc.fullscreen ||
     doc.fullscreenElement ||
     doc.webkitFullscreenElement ||
     doc.mozFullScreenElement ||
@@ -54,7 +151,9 @@ const isPlaying = (video) => !!(
 const enableFullScreen = async (doc, elem) => {
     // Chrome, Safari, and Opera
     if (elem.webkitEnterFullscreen && doc.webkitFullscreenEnabled) {
-        await elem.webkitEnterFullscreen(); 
+        await elem.webkitEnterFullscreen(Element.ALLOW_KEYBOARD_INPUT); 
+    } else if(elem.webkitRequestFullscreen && doc.webkitFullscreenEnabled) {
+        await elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
     // Firefox
     } else if (elem.mozRequestFullScreen && doc.mozFullScreenEnabled) {
         await elem.mozRequestFullScreen();
@@ -76,24 +175,32 @@ const disableFullscreen = async (doc, elem) => {
         await doc.msExitFullscreen();
     }
 };
-const toggleFullscreen = async (doc, elem) => {
-    if (isFullScreen(doc)) {
-        await disableFullscreen(doc);
-    } else {
-        await enableFullScreen(doc, elem);
+const toggleFullscreen = async (doc, ...elems) => {
+    // NOTE: Ordering of elems is order of #top-layer.
+    for (const elem of elems) {
+        if (!elem) break;
+        if (isFullScreen(doc, elem)) {
+            await disableFullscreen(doc, elem);
+        } else {
+            await enableFullScreen(doc, elem);
+        }
     }
 };
 const getVideos = (doc) => {
     return doc.querySelectorAll("video"); // $$("video")
 };
+const isInputting = (event) => {
+    const tagName = event.target.tagName.toLowerCase();
+    return tagName === "input" || tagName === "textarea" || event.target.isContentEditable;
+};
 const setLastPlayedVideo = (doc) => {
     const videos = getVideos(doc);
     for (const video of videos) {
         video.addEventListener("play", () => {
-            video.setAttribute("data-last-played", "true");
+            video.setAttribute("last-video-played", "true");
             for (const otherVideo of getVideos(doc)) {
                 if (otherVideo !== video) {
-                    otherVideo.removeAttribute("data-last-played");
+                    otherVideo.removeAttribute("last-video-played");
                 }
             }
         });
@@ -101,12 +208,22 @@ const setLastPlayedVideo = (doc) => {
 };
 const getLastPlayedVideo = (doc) => {
     return (
-        doc.querySelector("video[data-last-played]") 
+        doc.querySelector("video[last-video-played]") 
         || doc.querySelector("video")
         || ((doc.activeElement instanceof HTMLVideoElement) ? doc.activeElement : null)
     )
 };
-
+const getRelativePosition = (doc, elem) =>{
+    const elemRect = elem.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;;
+    return {
+        top: elemRect.top + scrollTop, 
+        left: elemRect.left + scrollLeft,
+        height: elem.offsetHeight,
+        width: elem.offsetWidth
+    };
+}
 // CHROME API
 const getCurrentTabs = async () => {
     const queryOptions = { active: true, currentWindow: true };
@@ -123,7 +240,12 @@ const dissableAction = async (tabId) => {
     await chrome.action.disable(tabId);
 };
 const requestAction = async (action) => {
-    await chrome.runtime.sendMessage({ action });
+    try {
+        await chrome.runtime.sendMessage({ action });
+    } catch (err) {
+        // Upgrade extension will lost message, so reload required.
+        window.location.reload();
+    }
 };
 const setBadgeText = async (text, color) => {
     await chrome.action.setBadgeBackgroundColor({ color })
@@ -206,20 +328,28 @@ const syncStorage = (namespace, key, callback) => {
 
 export {
     regexInput
+    , emToPx
+    , remToPx
+    , pxToEm
+    , pxToRem
     , debounce
     , throttle
     , debounceThottled
     , throttleDebounced
+    , createDragAndDrop
+
     , isFullScreen
     , enableFullScreen
     , disableFullscreen
     , toggleFullscreen
-    , isPlaying
-    , requestAction
-    , setLastPlayedVideo
-    , getVideos
-    , getLastPlayedVideo
 
+    , isPlaying
+    , getVideos
+    , setLastPlayedVideo
+    , getLastPlayedVideo
+    , getRelativePosition
+
+    , requestAction
     , setStorage
     , setBadgeText
     , setIcon
@@ -233,24 +363,33 @@ export {
     , clearNotifications
     , enableAction
     , dissableAction
+    , isInputting
 };
 
 export default {
     regexInput
+    , emToPx
+    , remToPx
+    , pxToEm
+    , pxToRem
     , debounce
     , throttle
     , debounceThottled
     , throttleDebounced
+    , createDragAndDrop
+
     , isFullScreen
     , enableFullScreen
     , disableFullscreen
     , toggleFullscreen
-    , isPlaying
-    , requestAction
-    , getVideos
-    , getLastPlayedVideo
-    , setLastPlayedVideo
 
+    , isPlaying
+    , getVideos
+    , setLastPlayedVideo
+    , getLastPlayedVideo
+    , getRelativePosition
+
+    , requestAction
     , setStorage
     , setBadgeText
     , setIcon
@@ -264,4 +403,5 @@ export default {
     , clearNotifications
     , enableAction
     , dissableAction
+    , isInputting 
 };
