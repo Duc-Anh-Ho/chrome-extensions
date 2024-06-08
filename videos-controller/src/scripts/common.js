@@ -325,6 +325,9 @@ const syncStorage = (namespace, key, callback) => {
         }
     });
 };
+const getInput = (doc) => {
+    return doc.querySelectorAll("input, textarea, select");
+}
 
 export {
     regexInput
@@ -364,6 +367,7 @@ export {
     , enableAction
     , dissableAction
     , isInputting
+    , getInput
 };
 
 export default {
@@ -404,4 +408,5 @@ export default {
     , enableAction
     , dissableAction
     , isInputting 
+    , getInput
 };

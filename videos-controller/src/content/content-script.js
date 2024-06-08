@@ -141,6 +141,20 @@ const main = async () => {
     const runner = window.setInterval(() => {
         syncPlaybackRate();
     }, 750);
+    // Change input shortcut
+    const INPUTs = common.getInput(document);
+    let index = 0;
+    const changeInput = common.throttleDebounced(
+        async () => {
+            console.log("INPUTs:", INPUTs);
+            if (!INPUTs.length) return;
+            INPUTs[index].focus();
+            index++;
+            if (index > INPUTs.length) index = 0;
+        },
+        500,
+        300
+    );
     // Events
     document.addEventListener("click", async (event) => {
         // Refresh/Update
@@ -151,9 +165,18 @@ const main = async () => {
         syncPlaybackRate();
     });
     document.addEventListener("keydown", async (event) => {
-        // console.log("event.code:", event.code);
         common.setLastPlayedVideo(document); // Refresh/Update variables
         syncPlaybackRate();
+        switch (event.code) {
+            case "Slash":
+                // TEST
+                // if (event.shiftKey) await common.requestAction(ACTION.CREATE_NOTIFICATION); 
+                // Change input
+                if (event.shiftKey && event.ctrlKey) changeInput();
+                break;
+            default:
+                break;
+        }
         if (isInputting(event)) return; // Prevents shortcut While Inputing
         switch (event.code) {
             case "Period":
@@ -161,9 +184,6 @@ const main = async () => {
                 break;
             case "Comma":
                 if (event.shiftKey) setSpeed("-");
-                break;
-            case "Slash":
-                if (event.shiftKey) await common.requestAction(ACTION.CREATE_NOTIFICATION);
                 break;
             case "KeyP":
             case "KeyK":
