@@ -124,32 +124,7 @@ const main = async () => {
             shadowRoot.append(inVideoCont);
             document.body.prepend(overlayVideoCont);
         }
-        // inVideoCont.addEventListener("mouseup", (event) => {
-        //     console.log("here: line #119"); // TODO: ⬅️ DELETE 
-        //     setPosition({
-        //         top: inVideoCont.style.top,
-        //         left: inVideoCont.style.left
-        //     })
-        // })
-        // document.addEventListener("mouseup", (event) => {
-        //     console.log("here: line #126"); // TODO: ⬅️ DELETE 
-        //     setPosition({
-        //         top: inVideoCont.style.top,
-        //         left: inVideoCont.style.left
-        //     })
-        // })
-        // overlayVideoCont.addEventListener("mouseLeave", (event) => {
-        //     console.log("here: line #133"); // TODO: ⬅️ DELETE 
-        //     setPosition({
-        //         top: inVideoCont.style.top,
-        //         left: inVideoCont.style.left
-        //     })
-        // })
-
-        // inVideoCont.addEventListener("mouseenter",showMore);
-        // inVideoCont.addEventListener("mouseout",showLess);
-
-        setDisplayTimer(1000000); //TODO: Optional choice
+        setDisplayTimer(2000); //TODO: Optional choice
     };
     const removeCoverInVideo = () => {
         const overlayVideoCont = document.getElementById("overlay-video-container");
@@ -163,7 +138,7 @@ const main = async () => {
     };
     // Auto Sync
     common.syncStorage("sync", "videosConfig", syncPlaybackRate);
-    let runner = window.setInterval(() => {
+    const runner = window.setInterval(() => {
         syncPlaybackRate();
     }, 750);
     // Events
@@ -232,7 +207,6 @@ const main = async () => {
                 if (event.shiftKey) setSpeed(500);
                 break;
             case "Escape":
-                console.log("here: line #228"); // TODO: ⬅️ DELETE 
                 removeCoverInVideo();
                 break;
             case "Backquote":
